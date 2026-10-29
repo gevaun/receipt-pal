@@ -903,6 +903,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "json5" },
+    { name = "pydantic-settings" },
     { name = "python-dotenv" },
 ]
 
@@ -917,6 +918,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115" },
     { name = "httpx", specifier = ">=0.28.1" },
     { name = "json5", specifier = ">=0.15.0" },
+    { name = "pydantic-settings", specifier = ">=2.15.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
 ]
 
