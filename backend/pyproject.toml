@@ -1,7 +1,7 @@
 [project]
-name = "receipt-pal-api"
+name = "receipt-pal-backend"
 version = "0.1.0"
-description = "Receipt Pal API"
+description = "Receipt Pal backend"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi[standard]>=0.115",
