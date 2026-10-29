@@ -8,13 +8,14 @@ import json5
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
+from app.core.config import settings
 from app.logging_config import setup_logging
 
 load_dotenv()
 setup_logging()
 log = logging.getLogger(__name__)
 
-app = FastAPI(title="Receipt Pal")
+app = FastAPI(title=settings.app_name)
 
 
 @app.get("/health")
