@@ -58,14 +58,13 @@ def _parse_transactions_xml(text: str) -> dict[str, Any]:
     return {"results": int(results) if results else len(rows), "rows": rows}
 
 
-# http://192.168.100.231:8888/moneyBook/getDataByPeriod?startDate=2026-10-01&endDate=2026-10-31&mbid=1&assetId=&_dc=1791510898633
 @app.get("/get-transactions")
 async def get_transactions(
     start_date: str,
     end_date: str,
     mbid: int | None = None,
     asset_id: str | None = None,
-    _dc: str | None = "1793248212260",
+    _dc: str | None = None,
 ) -> dict[str, Any]:
     base_url = os.getenv("MONEY_MANAGER_BASE_URL")
     if not base_url:
@@ -78,7 +77,7 @@ async def get_transactions(
         "endDate": end_date,
         "mbid": mbid,
         "assetId": asset_id,
-        "_dc": _dc,  # This is a dummy value; you can generate a new one if needed
+        "_dc": _dc,
     }
     try:
         log.info("Fetching transactions from %s with params %s", url, params)
