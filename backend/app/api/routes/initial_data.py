@@ -11,9 +11,6 @@ router = APIRouter(tags=["money-manager"])
 log = logging.getLogger(__name__)
 
 
-# Proxies Money Manager's init data (accounts, categories, etc.).
-# MONEY_MANAGER_BASE_URL should include the /moneyBook prefix,
-# e.g. http://192.168.100.222:8888/moneyBook
 @router.get("/get-initial-data")
 async def initial_data(base_url: MoneyManagerBaseUrl) -> dict[str, Any]:
     url = f"{base_url}/moneyBook/getInitData"
