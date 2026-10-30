@@ -14,9 +14,11 @@ def test_logging_level_and_single_stdout_handler(level: str) -> None:
             "import logging; "
             "from uvicorn.config import LOGGING_CONFIG; "
             "logging.config.dictConfig(LOGGING_CONFIG); "
-            "from app.core.logging import setup_logging; "
+            "from app.logging_config import setup_logging; "
             "setup_logging(); setup_logging(); "
-            "names = ('app.money_manager.router', 'uvicorn', 'uvicorn.error', 'uvicorn.access'); "
+            "names = ("
+            "'app.api.routes.transactions', 'uvicorn', 'uvicorn.error', 'uvicorn.access'"
+            "); "
             "[(logging.getLogger(name).debug('debug marker'), "
             "logging.getLogger(name).info('info marker'), "
             "logging.getLogger(name).warning('warning marker')) for name in names]",
@@ -31,5 +33,5 @@ def test_logging_level_and_single_stdout_handler(level: str) -> None:
     assert result.stdout.count("warning marker") == 4
     assert result.stdout.count("info marker") == (0 if level == "WARNING" else 4)
     assert result.stdout.count("debug marker") == (4 if level == "DEBUG" else 0)
-    assert "app.money_manager.router:" in result.stdout
+    assert "app.api.routes.transactions:" in result.stdout
     assert "uvicorn.access:" in result.stdout
