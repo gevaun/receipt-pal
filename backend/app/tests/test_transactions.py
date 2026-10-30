@@ -161,7 +161,10 @@ def test_delete_transactions_joins_ids(
     assert request.content.decode() == expected_body
 
 
-def test_delete_transactions_requires_ids() -> None:
+def test_delete_transactions_requires_ids(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Set the base URL so the dependency doesn't 500 before form validation runs.
+    monkeypatch.setenv("MONEY_MANAGER_BASE_URL", "http://mm.test")
+
     response = client.post("/delete-transactions", data={})
 
     assert response.status_code == 422
