@@ -89,6 +89,27 @@ def test_update_transaction_sends_id_and_empty_asset_fields(
     assert "+" not in body
 
 
+def test_create_transaction_accepts_guid_category_and_empty_note(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MONEY_MANAGER_BASE_URL", "http://mm.test")
+    seen: dict[str, httpx.Request] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["request"] = request
+        return httpx.Response(200, text="{success:true}")
+
+    monkeypatch.setattr(httpx, "AsyncClient", _mock_transport(handler))
+
+    form = {**FORM, "mcid": "619F363B-6AAB-4B7A-B4D4-6DAF37FB6603", "mbDetailContent": ""}
+    response = client.post("/create-transaction", data=form)
+
+    assert response.status_code == 200
+    body = seen["request"].content.decode()
+    assert "mcid=619F363B-6AAB-4B7A-B4D4-6DAF37FB6603" in body
+    assert "mbDetailContent=&" in body
+
+
 def test_update_transaction_upstream_error(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("MONEY_MANAGER_BASE_URL", "http://mm.test")
     monkeypatch.setattr(httpx, "AsyncClient", _mock_transport(lambda request: httpx.Response(500)))

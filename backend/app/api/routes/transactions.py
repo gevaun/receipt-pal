@@ -79,10 +79,11 @@ async def create_transaction(
     mb_category: Annotated[str, Form(alias="mbCategory")],
     sub_category: Annotated[str, Form(alias="subCategory")],
     mb_content: Annotated[str, Form(alias="mbContent")],
-    mb_detail_content: Annotated[str, Form(alias="mbDetailContent")],
     asset_id: Annotated[str, Form(alias="assetId")],
-    mcid: Annotated[int, Form()],
+    # Category IDs are small integers for built-in categories and GUIDs for user-created ones.
+    mcid: Annotated[str, Form()],
     mcscid: Annotated[str, Form()],
+    mb_detail_content: Annotated[str, Form(alias="mbDetailContent")] = "",
 ) -> dict[str, Any]:
     url = f"{base_url}/moneyBook/create"
     data = {
@@ -118,7 +119,7 @@ async def update_transaction(
     mb_date: Annotated[str, Form(alias="mbDate")],
     asset_id: Annotated[str, Form(alias="assetId")],
     pay_type: Annotated[str, Form(alias="payType")],
-    mcid: Annotated[int, Form()],
+    mcid: Annotated[str, Form()],
     mb_category: Annotated[str, Form(alias="mbCategory")],
     mcscid: Annotated[str, Form()],
     sub_category: Annotated[str, Form(alias="subCategory")],
@@ -126,7 +127,7 @@ async def update_transaction(
     mb_cash: Annotated[float, Form(alias="mbCash")],
     in_out_code: Annotated[int, Form(alias="inOutCode")],
     in_out_type: Annotated[str, Form(alias="inOutType")],
-    mb_detail_content: Annotated[str, Form(alias="mbDetailContent")],
+    mb_detail_content: Annotated[str, Form(alias="mbDetailContent")] = "",
     to_asset_id: Annotated[str, Form(alias="toAssetId")] = "",
     target_asset_id: Annotated[str, Form(alias="targetAssetId")] = "",
 ) -> dict[str, Any]:
