@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* Dark values are the defaults; [data-theme="light"] below overrides them.
+   index.html sets data-theme before first paint (see lib/theme.ts). */
+@theme {
+  --color-void: #0a0b0d;
+  --color-panel: #131519;
+  --color-raise: #1a1d22;
+  --color-sunk: #0e1013;
+  --color-pop: #101215;
+  --color-line: #262a31;
+  --color-track: #22252b;
+  --color-bar: #5a606b;
+  --color-fg: #ecedee;
+  --color-muted: #8b9099;
+  /* Accent for text, icons, focus and highlights. */
+  --color-lime: #d4ff3a;
+  /* Fill of the primary button; bright lime in both themes. */
+  --color-cta: #d4ff3a;
+  --color-cta-hover: #c4f020;
+  --color-on-cta: #0a0b0d;
+  --color-thermal: #f3f1ea;
+  --color-check: #ffb547;
+  --color-alert: #ff5a36;
+  --color-alert-fg: #ffc2b3;
+
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
+  --animate-print: print 0.35s ease-out both;
+  --animate-pulse-led: pulse-led 1.6s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  @keyframes print {
+    from { clip-path: inset(0 0 100% 0); opacity: 0.4; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+  }
+  @keyframes pulse-led {
+    50% { opacity: 0.45; }
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --grid-dot: rgb(255 255 255 / 0.035);
+    --shimmer-base: #22252b;
+    --shimmer-glint: #343841;
+    --shadow-strong: rgb(0 0 0 / 0.6);
+  }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --color-void: #f5f6f3;
+    --color-panel: #ffffff;
+    --color-raise: #eceee9;
+    --color-sunk: #fafbf8;
+    --color-pop: #ffffff;
+    --color-line: #dfe2dc;
+    --color-track: #e6e8e3;
+    --color-bar: #b3b8b0;
+    --color-fg: #0e0f11;
+    --color-muted: #646a72;
+    --color-lime: #4a7a00;
+    --color-check: #b45309;
+    --color-alert: #d92d20;
+    --color-alert-fg: #b42318;
+    --grid-dot: rgb(0 0 0 / 0.05);
+    --shimmer-base: #e9ebe6;
+    --shimmer-glint: #f7f8f5;
+    --shadow-strong: rgb(30 35 25 / 0.16);
+  }
+
+  body {
+    @apply bg-void font-sans text-fg antialiased;
+    font-size: 13px;
+  }
+  :root:not([data-theme="light"]) input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.6);
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Faint dot grid behind page content. */
+@utility dot-grid {
+  background-image: radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+
+/* Thermal receipt with a torn bottom edge. */
+@utility receipt-paper {
+  -webkit-mask:
+    linear-gradient(#000, #000) 0 0 / 100% calc(100% - 7px) no-repeat,
+    conic-gradient(from -45deg at 50% 0, #000 90deg, transparent 0) 0 100% / 10px 7px repeat-x;
+  mask:
+    linear-gradient(#000, #000) 0 0 / 100% calc(100% - 7px) no-repeat,
+    conic-gradient(from -45deg at 50% 0, #000 90deg, transparent 0) 0 100% / 10px 7px repeat-x;
+}
+
+@utility shimmer-bar {
+  background: linear-gradient(90deg, var(--shimmer-base) 25%, var(--shimmer-glint) 50%, var(--shimmer-base) 75%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
