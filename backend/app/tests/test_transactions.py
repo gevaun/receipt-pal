@@ -97,3 +97,50 @@ def test_update_transaction_upstream_error(monkeypatch: pytest.MonkeyPatch) -> N
 
     assert response.status_code == 502
     assert response.json() == {"detail": "Failed to update transaction"}
+
+
+@pytest.mark.parametrize(
+    ("ids", "expected_body"),
+    [
+        (
+            ["BCA919B9-D909-4BEF-8547-827BDC5FD98E"],
+            "ids=%3ABCA919B9-D909-4BEF-8547-827BDC5FD98E",
+        ),
+        (
+            [
+                "A4AFAE13-48B7-4176-9522-E99D48E06104",
+                "B66EED65-FE19-4FB3-8F15-9C2BB67A3016",
+                "00EFCD26-7E93-41A3-A26B-B15607A968A4",
+                "A55CBFE4-3B2D-4524-ABEA-76B205C5CB7C",
+            ],
+            "ids=%3AA4AFAE13-48B7-4176-9522-E99D48E06104"
+            "%3AB66EED65-FE19-4FB3-8F15-9C2BB67A3016"
+            "%3A00EFCD26-7E93-41A3-A26B-B15607A968A4"
+            "%3AA55CBFE4-3B2D-4524-ABEA-76B205C5CB7C",
+        ),
+    ],
+)
+def test_delete_transactions_joins_ids(
+    monkeypatch: pytest.MonkeyPatch, ids: list[str], expected_body: str
+) -> None:
+    monkeypatch.setenv("MONEY_MANAGER_BASE_URL", "http://mm.test")
+    seen: dict[str, httpx.Request] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["request"] = request
+        return httpx.Response(200, text="{success:true}")
+
+    monkeypatch.setattr(httpx, "AsyncClient", _mock_transport(handler))
+
+    response = client.post("/delete-transactions", data={"ids": ids})
+
+    assert response.status_code == 200
+    request = seen["request"]
+    assert str(request.url) == "http://mm.test/moneyBook/delete"
+    assert request.content.decode() == expected_body
+
+
+def test_delete_transactions_requires_ids() -> None:
+    response = client.post("/delete-transactions", data={})
+
+    assert response.status_code == 422

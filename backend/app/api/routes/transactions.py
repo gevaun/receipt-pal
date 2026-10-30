@@ -54,14 +54,14 @@ async def get_transactions(
         raise HTTPException(status_code=502, detail="Failed to parse transactions") from exc
 
 
-async def _post_form(url: str, data: dict[str, Any]) -> httpx.Response:
+async def _post_form(url: str, data: dict[str, Any], safe: str = ":") -> httpx.Response:
     """POST form data to Money Manager, raising httpx errors on failure."""
     async with httpx.AsyncClient(timeout=10.0) as client:
         # Money Manager stores "+" literally, so encode spaces as %20 rather than
         # letting httpx form-encode them as "+".
         response = await client.post(
             url,
-            content=urlencode(data, quote_via=quote, safe=":"),
+            content=urlencode(data, quote_via=quote, safe=safe),
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
         response.raise_for_status()
@@ -158,3 +158,22 @@ async def update_transaction(
     except httpx.RequestError as exc:
         log.exception("Failed to request transaction update from Money Manager")
         raise HTTPException(status_code=502, detail="Failed to update transaction") from exc
+
+
+@router.post("/delete-transactions")
+async def delete_transactions(
+    base_url: MoneyManagerBaseUrl,
+    ids: Annotated[list[str], Form(min_length=1)],
+) -> dict[str, Any]:
+    url = f"{base_url}/moneyBook/delete"
+    data = {"ids": "".join(f":{id_}" for id_ in ids)}
+    try:
+        log.info("Deleting %d transaction(s) at %s", len(ids), url)
+        response = await _post_form(url, data, safe="")
+        return {"result": response.text}
+    except httpx.HTTPStatusError as exc:
+        log.exception("Money Manager returned HTTP %s", exc.response.status_code)
+        raise HTTPException(status_code=502, detail="Failed to delete transactions") from exc
+    except httpx.RequestError as exc:
+        log.exception("Failed to request transaction deletion from Money Manager")
+        raise HTTPException(status_code=502, detail="Failed to delete transactions") from exc
