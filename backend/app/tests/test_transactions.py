@@ -55,3 +55,45 @@ def test_create_transaction_encodes_spaces_as_percent_20(
     assert "payType=Scotia%20Mastercard" in body
     assert "mbDate=2026-10-25T00:00:00" in body
     assert "+" not in body
+
+
+def test_update_transaction_sends_id_and_empty_asset_fields(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("MONEY_MANAGER_BASE_URL", "http://mm.test")
+    seen: dict[str, httpx.Request] = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["request"] = request
+        return httpx.Response(200, text="{success:true}")
+
+    monkeypatch.setattr(httpx, "AsyncClient", _mock_transport(handler))
+
+    form = {
+        **FORM,
+        "id": "BCA919B9-D909-4BEF-8547-827BDC5FD98E",
+        "inOutType": "Exp.",
+        "toAssetId": "",
+        "targetAssetId": "",
+    }
+    response = client.post("/update-transaction", data=form)
+
+    assert response.status_code == 200
+    request = seen["request"]
+    assert str(request.url) == "http://mm.test/moneyBook/update"
+    body = request.content.decode()
+    assert body.startswith("id=BCA919B9-D909-4BEF-8547-827BDC5FD98E&")
+    assert "toAssetId=&targetAssetId=&" in body
+    assert "mbContent=Super%20Valu%20Fresh%20Foods" in body
+    assert "inOutType=Exp." in body
+    assert "+" not in body
+
+
+def test_update_transaction_upstream_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("MONEY_MANAGER_BASE_URL", "http://mm.test")
+    monkeypatch.setattr(httpx, "AsyncClient", _mock_transport(lambda request: httpx.Response(500)))
+
+    response = client.post("/update-transaction", data={**FORM, "id": "abc"})
+
+    assert response.status_code == 502
+    assert response.json() == {"detail": "Failed to update transaction"}

@@ -54,6 +54,20 @@ async def get_transactions(
         raise HTTPException(status_code=502, detail="Failed to parse transactions") from exc
 
 
+async def _post_form(url: str, data: dict[str, Any]) -> httpx.Response:
+    """POST form data to Money Manager, raising httpx errors on failure."""
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        # Money Manager stores "+" literally, so encode spaces as %20 rather than
+        # letting httpx form-encode them as "+".
+        response = await client.post(
+            url,
+            content=urlencode(data, quote_via=quote, safe=":"),
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+        response.raise_for_status()
+    return response
+
+
 @router.post("/create-transaction")
 async def create_transaction(
     base_url: MoneyManagerBaseUrl,
@@ -87,15 +101,7 @@ async def create_transaction(
     }
     try:
         log.info("Creating transaction at %s", url)
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            # Money Manager stores "+" literally, so encode spaces as %20 rather than
-            # letting httpx form-encode them as "+".
-            response = await client.post(
-                url,
-                content=urlencode(data, quote_via=quote, safe=":"),
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-            )
-            response.raise_for_status()
+        response = await _post_form(url, data)
         return {"result": response.text}
     except httpx.HTTPStatusError as exc:
         log.exception("Money Manager returned HTTP %s", exc.response.status_code)
@@ -103,3 +109,52 @@ async def create_transaction(
     except httpx.RequestError as exc:
         log.exception("Failed to request transaction creation from Money Manager")
         raise HTTPException(status_code=502, detail="Failed to create transaction") from exc
+
+
+@router.post("/update-transaction")
+async def update_transaction(
+    base_url: MoneyManagerBaseUrl,
+    id: Annotated[str, Form()],
+    mb_date: Annotated[str, Form(alias="mbDate")],
+    asset_id: Annotated[str, Form(alias="assetId")],
+    pay_type: Annotated[str, Form(alias="payType")],
+    mcid: Annotated[int, Form()],
+    mb_category: Annotated[str, Form(alias="mbCategory")],
+    mcscid: Annotated[str, Form()],
+    sub_category: Annotated[str, Form(alias="subCategory")],
+    mb_content: Annotated[str, Form(alias="mbContent")],
+    mb_cash: Annotated[float, Form(alias="mbCash")],
+    in_out_code: Annotated[int, Form(alias="inOutCode")],
+    in_out_type: Annotated[str, Form(alias="inOutType")],
+    mb_detail_content: Annotated[str, Form(alias="mbDetailContent")],
+    to_asset_id: Annotated[str, Form(alias="toAssetId")] = "",
+    target_asset_id: Annotated[str, Form(alias="targetAssetId")] = "",
+) -> dict[str, Any]:
+    url = f"{base_url}/moneyBook/update"
+    data = {
+        "id": id,
+        "mbDate": mb_date,
+        "assetId": asset_id,
+        "toAssetId": to_asset_id,
+        "targetAssetId": target_asset_id,
+        "payType": pay_type,
+        "mcid": mcid,
+        "mbCategory": mb_category,
+        "mcscid": mcscid,
+        "subCategory": sub_category,
+        "mbContent": mb_content,
+        "mbCash": mb_cash,
+        "inOutCode": in_out_code,
+        "inOutType": in_out_type,
+        "mbDetailContent": mb_detail_content,
+    }
+    try:
+        log.info("Updating transaction %s at %s", id, url)
+        response = await _post_form(url, data)
+        return {"result": response.text}
+    except httpx.HTTPStatusError as exc:
+        log.exception("Money Manager returned HTTP %s", exc.response.status_code)
+        raise HTTPException(status_code=502, detail="Failed to update transaction") from exc
+    except httpx.RequestError as exc:
+        log.exception("Failed to request transaction update from Money Manager")
+        raise HTTPException(status_code=502, detail="Failed to update transaction") from exc
