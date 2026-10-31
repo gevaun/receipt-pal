@@ -1,24 +1,47 @@
 import { useEffect, useState } from "react";
-import { createExpense, deleteTransactions, updateTransaction, type Transaction } from "../lib/api";
+import {
+  createExpense,
+  deleteTransactions,
+  updateTransaction,
+  type Transaction,
+} from "../lib/api";
 import { useInvalidate } from "../lib/data";
 import { today } from "../lib/format";
 import type { Lookups } from "../lib/lookups";
-import { draftFromTransaction, emptyDraft, ExpenseForm, validateDraft, type Draft } from "./ExpenseForm";
+import {
+  draftFromTransaction,
+  emptyDraft,
+  ExpenseForm,
+  validateDraft,
+  type Draft,
+} from "./ExpenseForm";
 import { CloseIcon } from "./icons";
 import { Banner, Button } from "./ui";
 
-export type DrawerState = { mode: "create" } | { mode: "edit"; tx: Transaction };
+export type DrawerState =
+  { mode: "create" } | { mode: "edit"; tx: Transaction };
 
-export function ExpenseDrawer({ state, lookups, onClose }: { state: DrawerState; lookups: Lookups; onClose: () => void }) {
+export function ExpenseDrawer({
+  state,
+  lookups,
+  onClose,
+}: {
+  state: DrawerState;
+  lookups: Lookups;
+  onClose: () => void;
+}) {
   const invalidate = useInvalidate();
   const tx = state.mode === "edit" ? state.tx : null;
-  const [draft, setDraft] = useState<Draft>(() => (tx ? draftFromTransaction(tx) : emptyDraft(today(), lookups)));
+  const [draft, setDraft] = useState<Draft>(() =>
+    tx ? draftFromTransaction(tx) : emptyDraft(today(), lookups),
+  );
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
-    if (!tx && !draft.assetId && lookups.lastAccountId) setDraft(emptyDraft(draft.date, lookups));
+    if (!tx && !draft.assetId && lookups.lastAccountId)
+      setDraft(emptyDraft(draft.date, lookups));
   }, [lookups, tx, draft.assetId, draft.date]);
 
   async function run(action: () => Promise<void>) {
@@ -38,7 +61,9 @@ export function ExpenseDrawer({ state, lookups, onClose }: { state: DrawerState;
   function save() {
     const result = validateDraft(draft);
     if (typeof result === "string") return setError(result);
-    void run(() => (tx ? updateTransaction(tx, result) : createExpense(result)));
+    void run(() =>
+      tx ? updateTransaction(tx, result) : createExpense(result),
+    );
   }
 
   return (
@@ -49,17 +74,33 @@ export function ExpenseDrawer({ state, lookups, onClose }: { state: DrawerState;
     >
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-[16px] font-medium tracking-[-0.01em]">{tx ? "Edit expense" : "Add expense"}</h2>
-          {tx && <p className="mt-0.5 font-mono text-[10px] text-muted">ID {tx.id.slice(0, 8)}…</p>}
+          <h2 className="text-[16px] font-medium tracking-[-0.01em]">
+            {tx ? "Edit expense" : "Add expense"}
+          </h2>
+          {tx && (
+            <p className="mt-0.5 font-mono text-[10px] text-muted">
+              ID {tx.id.slice(0, 8)}…
+            </p>
+          )}
         </div>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded-md p-1 text-muted hover:bg-raise hover:text-fg">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="rounded-md p-1 text-muted hover:bg-raise hover:text-fg"
+        >
           <CloseIcon className="size-4" />
         </button>
       </div>
 
       {error && <Banner onDismiss={() => setError(null)}>{error}</Banner>}
 
-      <ExpenseForm draft={draft} lookups={lookups} disabled={busy} onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))} />
+      <ExpenseForm
+        draft={draft}
+        lookups={lookups}
+        disabled={busy}
+        onChange={(patch) => setDraft((d) => ({ ...d, ...patch }))}
+      />
 
       <div className="mt-auto flex items-center gap-2 border-t border-line pt-4">
         <Button onClick={save} disabled={busy}>
@@ -74,7 +115,11 @@ export function ExpenseDrawer({ state, lookups, onClose }: { state: DrawerState;
             className="ml-auto"
             disabled={busy}
             onBlur={() => setConfirmDelete(false)}
-            onClick={() => (confirmDelete ? void run(() => deleteTransactions([tx.id])) : setConfirmDelete(true))}
+            onClick={() =>
+              confirmDelete
+                ? void run(() => deleteTransactions([tx.id]))
+                : setConfirmDelete(true)
+            }
           >
             {confirmDelete ? "Confirm delete" : "Delete"}
           </Button>
