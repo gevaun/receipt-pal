@@ -7,6 +7,7 @@ import { DataProvider } from "./lib/data";
 import { Categories } from "./pages/Categories";
 import { Dashboard } from "./pages/Dashboard";
 import { Scan } from "./pages/Scan";
+import { Settings } from "./pages/Settings";
 import { Transactions } from "./pages/Transactions";
 
 createRoot(document.getElementById("root")!).render(
@@ -19,6 +20,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="scan" element={<Scan />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="categories" element={<Categories />} />
+            <Route path="settings" element={<Settings />} />
           </Route>
         </Routes>
       </BrowserRouter>

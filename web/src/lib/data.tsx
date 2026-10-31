@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { getTransactions, type Transaction } from "./api";
+import { getConnectionStatus, getTransactions, type ConnectionStatus, type Transaction } from "./api";
 import { daysAgo, today } from "./format";
 import { buildLookups, type Lookups } from "./lookups";
 
@@ -47,4 +47,28 @@ export function useTransactions(start: string, end: string): Query<Transaction[]
 export function useLookups(): Lookups {
   const { data } = useTransactions(daysAgo(365), today());
   return useMemo(() => buildLookups(data ?? []), [data]);
+}
+
+/** Whether the backend can reach Money Manager; rechecked every 30 s and after writes. */
+export function useConnectionStatus(): ConnectionStatus | null {
+  const { version } = useContext(VersionContext);
+  const [status, setStatus] = useState<ConnectionStatus | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const check = () =>
+      getConnectionStatus(controller.signal)
+        .then(setStatus)
+        .catch(() => {
+          if (!controller.signal.aborted) setStatus(null);
+        });
+    void check();
+    const timer = setInterval(check, 30_000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [version]);
+
+  return status;
 }

@@ -132,3 +132,32 @@ export function deleteTransactions(ids: string[]): Promise<void> {
   for (const id of ids) form.append("ids", id);
   return postForm("/delete-transactions", form, "Money Manager didn't delete the transactions.");
 }
+
+export interface Settings {
+  money_manager_base_url: string | null;
+  /** "file" when saved from Settings, "env" when it comes from the backend's .env. */
+  source: "file" | "env" | null;
+}
+
+export interface ConnectionStatus {
+  configured: boolean;
+  reachable: boolean;
+  money_manager_base_url: string | null;
+  detail: string | null;
+}
+
+export function getSettings(signal?: AbortSignal): Promise<Settings> {
+  return request<Settings>("/settings", { signal });
+}
+
+export function saveSettings(moneyManagerBaseUrl: string): Promise<Settings> {
+  return request<Settings>("/settings", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ money_manager_base_url: moneyManagerBaseUrl }),
+  });
+}
+
+export function getConnectionStatus(signal?: AbortSignal): Promise<ConnectionStatus> {
+  return request<ConnectionStatus>("/settings/status", { signal });
+}

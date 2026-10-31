@@ -1,7 +1,8 @@
 import type { ComponentType, ReactNode, SVGProps } from "react";
 import { NavLink, Outlet } from "react-router";
+import { useConnectionStatus } from "../lib/data";
 import { useTheme, type ThemePreference } from "../lib/theme";
-import { DashboardIcon, ListIcon, MonitorIcon, MoonIcon, ScanIcon, SunIcon, TagIcon } from "./icons";
+import { DashboardIcon, ListIcon, MonitorIcon, MoonIcon, ScanIcon, SettingsIcon, SunIcon, TagIcon } from "./icons";
 import { cx } from "./ui";
 
 const themes: { value: ThemePreference; label: string; icon: ComponentType<SVGProps<SVGSVGElement>> }[] = [
@@ -40,6 +41,7 @@ const links: { to: string; label: string; icon: ComponentType<SVGProps<SVGSVGEle
   { to: "/scan", label: "Scan", icon: ScanIcon },
   { to: "/transactions", label: "Transactions", icon: ListIcon },
   { to: "/categories", label: "Categories", icon: TagIcon },
+  { to: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 
 export function BrandMark() {
@@ -86,10 +88,7 @@ export function Layout() {
         <div className="mt-auto -mb-3">
           <ThemeSwitch />
         </div>
-        <div className="flex items-center gap-2 px-2.5 text-[11.5px] text-muted">
-          <span className="size-1.5 shrink-0 rounded-full bg-lime shadow-[0_0_6px_var(--color-lime)]" />
-          <span className="hidden md:inline">Money Manager</span>
-        </div>
+        <ConnectionLink />
       </nav>
       <main className="dot-grid min-w-0 overflow-y-auto">
         <Outlet />
@@ -107,5 +106,33 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow: string; titl
       </div>
       {children}
     </header>
+  );
+}
+
+/** Sidebar footer: Money Manager connection state, linking to Settings. */
+function ConnectionLink() {
+  const status = useConnectionStatus();
+  const state = !status ? "unknown" : !status.configured ? "unset" : status.reachable ? "connected" : "offline";
+  const label = { unknown: "Checking…", unset: "Not set up", connected: "Connected", offline: "Can't reach" }[state];
+  return (
+    <NavLink
+      to="/settings"
+      title={status?.detail ?? `Money Manager · ${label}`}
+      className="flex items-center gap-2 rounded-md px-2.5 py-1 text-[11.5px] text-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-lime"
+    >
+      <span
+        className={cx(
+          "size-1.5 shrink-0 rounded-full",
+          state === "connected" && "bg-lime shadow-[0_0_6px_var(--color-lime)]",
+          state === "offline" && "bg-alert",
+          state === "unset" && "bg-check",
+          state === "unknown" && "bg-muted",
+        )}
+      />
+      <span className="min-w-0 max-md:hidden">
+        <span className="block truncate">Money Manager</span>
+        <span className={cx("block truncate text-[10.5px]", state === "offline" && "text-alert", state === "unset" && "text-check")}>{label}</span>
+      </span>
+    </NavLink>
   );
 }

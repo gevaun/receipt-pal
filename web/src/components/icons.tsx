@@ -95,7 +95,15 @@ export const CloseIcon = (p: IconProps) => (
   </Icon>
 );
 
-export const SunIcon = (p: IconProps) => (
+export const SettingsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2.5 4.5h7M12.5 4.5h1M2.5 11.5h1M6.5 11.5h7" />
+    <circle cx="11" cy="4.5" r="1.5" />
+    <circle cx="5" cy="11.5" r="1.5" />
+  </Icon>
+);
+
+export const SunIcon =(p: IconProps) => (
   <Icon {...p}>
     <circle cx="8" cy="8" r="2.75" />
     <path d="M8 1.5v1.5M8 13v1.5M1.5 8H3M13 8h1.5M3.4 3.4l1.06 1.06M11.54 11.54l1.06 1.06M3.4 12.6l1.06-1.06M11.54 4.46l1.06-1.06" />

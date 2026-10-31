@@ -25,6 +25,10 @@ npm install
 npm run dev
 ```
 
+Set the Money Manager server address on the web app's Settings page. It's saved
+to `backend/data/settings.json` (git-ignored) and survives restarts;
+`MONEY_MANAGER_BASE_URL` in `.env` is only used when nothing has been saved.
+
 Receipt scanning in the web app currently replays a sample receipt; the Gemini
 extraction endpoint isn't built yet (see `web/src/lib/extract.ts`).
 
