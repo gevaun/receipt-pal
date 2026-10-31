@@ -109,7 +109,6 @@ export function PageHeader({ eyebrow, title, children }: { eyebrow: string; titl
   );
 }
 
-/** Sidebar footer: Money Manager connection state, linking to Settings. */
 function ConnectionLink() {
   const status = useConnectionStatus();
   const state = !status ? "unknown" : !status.configured ? "unset" : status.reachable ? "connected" : "offline";

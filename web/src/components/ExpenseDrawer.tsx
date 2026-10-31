@@ -17,7 +17,6 @@ export function ExpenseDrawer({ state, lookups, onClose }: { state: DrawerState;
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Lookups may arrive after the drawer opens; default the account once they do.
   useEffect(() => {
     if (!tx && !draft.assetId && lookups.lastAccountId) setDraft(emptyDraft(draft.date, lookups));
   }, [lookups, tx, draft.assetId, draft.date]);

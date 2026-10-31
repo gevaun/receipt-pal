@@ -1,9 +1,5 @@
-// Client for the FastAPI backend (backend/app/api). Requests go through the Vite
-// dev proxy at /api, which strips the prefix.
-
 export interface Transaction {
   id: string;
-  /** YYYY-MM-DD */
   date: string;
   amount: number;
   inOutType: string;
@@ -33,7 +29,6 @@ export interface ExpenseInput {
 
 export class ApiError extends Error {}
 
-/** Expense rows have inOutCode 1 and inOutType "Exp." in Money Manager's data. */
 export function isExpense(tx: Transaction): boolean {
   return tx.inOutCode === 1 || tx.inOutType.toLowerCase().startsWith("exp");
 }
@@ -86,7 +81,6 @@ export async function getTransactions(start: string, end: string, signal?: Abort
   return data.rows.map(toTransaction).sort((a, b) => b.date.localeCompare(a.date));
 }
 
-/** Money Manager answers writes with a JSON5-ish body such as `{success:true}`. */
 async function postForm(path: string, form: URLSearchParams, failure: string): Promise<void> {
   const data = await request<{ result: string }>(path, {
     method: "POST",
@@ -98,7 +92,6 @@ async function postForm(path: string, form: URLSearchParams, failure: string): P
 
 function expenseFields(input: ExpenseInput): Record<string, string> {
   return {
-    // Matches the format Money Manager's own web client sends.
     mbDate: `${input.date}T00:00:00`,
     mbCash: input.amount.toFixed(2),
     payType: input.account,
@@ -135,7 +128,6 @@ export function deleteTransactions(ids: string[]): Promise<void> {
 
 export interface Settings {
   money_manager_base_url: string | null;
-  /** "file" when saved from Settings, "env" when it comes from the backend's .env. */
   source: "file" | "env" | null;
 }
 

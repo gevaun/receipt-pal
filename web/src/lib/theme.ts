@@ -9,13 +9,10 @@ function readPreference(): ThemePreference {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === "light" || stored === "dark") return stored;
-  } catch {
-    // Storage can be blocked; fall back to the system setting.
-  }
+  } catch {}
   return "system";
 }
 
-/** Sets data-theme on <html>. index.html runs the same logic inline before first paint. */
 function apply(preference: ThemePreference) {
   const resolved = preference === "system" ? (media().matches ? "light" : "dark") : preference;
   document.documentElement.dataset.theme = resolved;
@@ -29,9 +26,7 @@ export function useTheme(): [ThemePreference, (preference: ThemePreference) => v
     try {
       if (preference === "system") localStorage.removeItem(STORAGE_KEY);
       else localStorage.setItem(STORAGE_KEY, preference);
-    } catch {
-      // Not persisted; the choice still applies for this visit.
-    }
+    } catch {}
     if (preference !== "system") return;
     const query = media();
     const onChange = () => apply("system");

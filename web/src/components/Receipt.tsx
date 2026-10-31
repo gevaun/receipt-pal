@@ -1,7 +1,6 @@
 import type { ReceiptLine } from "../lib/extract";
 import { cx } from "./ui";
 
-/** Thermal receipt that grows line by line out of a glowing printer slot. */
 export function Receipt({ lines, printing }: { lines: ReceiptLine[]; printing: boolean }) {
   return (
     <div className="flex flex-col items-center">

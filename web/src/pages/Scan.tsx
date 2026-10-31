@@ -79,7 +79,6 @@ export function Scan() {
     setPhase("extracting");
     try {
       await extractReceipt(next, handleEvent, controller.signal);
-      // Anything the receipt didn't give us is left for the user to fill in.
       setTones((t) => Object.fromEntries(Object.entries(t).map(([k, v]) => [k, v === "pending" ? "check" : v])));
       setPhase("review");
     } catch (e) {
@@ -226,7 +225,6 @@ export function Scan() {
                   disabled={phase === "saving"}
                   onChange={(patch) => {
                     setDraft((d) => ({ ...d, ...patch }));
-                    // Once the user edits a field it's theirs, not the model's.
                     setTones((t) => {
                       const next = { ...t };
                       for (const key of Object.keys(patch)) {

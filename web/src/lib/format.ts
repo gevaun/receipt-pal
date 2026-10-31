@@ -11,7 +11,6 @@ export function splitMoney(value: number): { whole: string; cents: string } {
 
 export interface Month {
   year: number;
-  /** 0-based, like Date#getMonth. */
   month: number;
 }
 
@@ -50,7 +49,6 @@ export function monthLabel({ year, month }: Month): string {
   return new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-/** "2026-10-25" -> "25 Oct" */
 export function shortDate(iso: string): string {
   const [year, month, day] = iso.split("-").map(Number);
   if (!year || !month || !day) return iso;

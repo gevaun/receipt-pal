@@ -3,8 +3,6 @@ import { getConnectionStatus, getTransactions, type ConnectionStatus, type Trans
 import { daysAgo, today } from "./format";
 import { buildLookups, type Lookups } from "./lookups";
 
-// Every fetch hook depends on `version`; bumping it after a write refetches
-// whatever is on screen.
 const VersionContext = createContext({ version: 0, invalidate: () => {} });
 
 export function DataProvider({ children }: { children: ReactNode }) {
@@ -43,13 +41,11 @@ export function useTransactions(start: string, end: string): Query<Transaction[]
   return state;
 }
 
-/** Accounts, categories and merchants seen in the last year of expenses. */
 export function useLookups(): Lookups {
   const { data } = useTransactions(daysAgo(365), today());
   return useMemo(() => buildLookups(data ?? []), [data]);
 }
 
-/** Whether the backend can reach Money Manager; rechecked every 30 s and after writes. */
 export function useConnectionStatus(): ConnectionStatus | null {
   const { version } = useContext(VersionContext);
   const [status, setStatus] = useState<ConnectionStatus | null>(null);

@@ -1,10 +1,3 @@
-// Receipt extraction streams printed lines and form fields as they're read.
-//
-// The backend has no extraction endpoint yet (TODO.md, phase 2: POST /api/extract
-// with Gemini). Until it exists, `extractReceipt` is a mock that ignores the
-// image and replays a sample receipt. Swap it for a real implementation that
-// emits the same events.
-
 export type ReceiptLine =
   | { kind: "title"; text: string }
   | { kind: "small"; text: string }

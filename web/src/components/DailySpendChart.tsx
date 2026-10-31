@@ -4,7 +4,6 @@ import { cx } from "./ui";
 
 const compact = new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 });
 
-/** Rounds up to 1, 2, 2.5 or 5 × 10ⁿ so gridlines land on readable values. */
 function niceCeil(value: number): number {
   if (value <= 0) return 1;
   const power = 10 ** Math.floor(Math.log10(value));
@@ -12,10 +11,8 @@ function niceCeil(value: number): number {
   return step * power;
 }
 
-// Horizontal gridlines at quarter steps; the value axis labels every other one.
 const gridlines = [0, 0.25, 0.5, 0.75, 1];
 
-/** One column per day of the month, separated by faint vertical rules. */
 export function DailySpendChart({ daily, month, todayIndex }: { daily: number[]; month: Month; todayIndex: number | null }) {
   const [hoverDay, setHoverDay] = useState<number | null>(null);
   const peakDay = daily.reduce((best, value, i) => (value > daily[best] ? i : best), 0);

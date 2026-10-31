@@ -1,8 +1,5 @@
 import { isExpense, type Transaction } from "./api";
 
-// The backend has no endpoints for accounts, categories or merchants, so the
-// pickers are built from the expenses already in Money Manager.
-
 export interface Account {
   id: string;
   name: string;
@@ -24,7 +21,6 @@ export interface Category {
 export interface Merchant {
   name: string;
   count: number;
-  /** The most recent expense at this merchant, used to prefill the form. */
   last: Transaction;
 }
 
@@ -80,7 +76,6 @@ export function buildLookups(transactions: Transaction[]): Lookups {
   };
 }
 
-/** Finds a previous merchant matching a name read off a receipt. */
 export function matchMerchant(merchants: Merchant[], name: string): Merchant | null {
   const target = normalize(name);
   if (!target) return null;

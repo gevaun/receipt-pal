@@ -51,7 +51,6 @@ export function draftFromTransaction(tx: Transaction): Draft {
   };
 }
 
-/** Category, sub-category and account from the merchant's last expense. */
 export function merchantDefaults(merchant: Merchant): Partial<Draft> {
   const { last } = merchant;
   return {
@@ -69,7 +68,6 @@ export function parseAmount(text: string): number {
   return Number.parseFloat(text.replace(/[^0-9.]/g, ""));
 }
 
-/** Returns an error message, or the input ready to send. */
 export function validateDraft(draft: Draft): string | ExpenseInput {
   const amount = parseAmount(draft.amount);
   if (!draft.merchant.trim()) return "Add a merchant.";
@@ -111,7 +109,6 @@ export function ExpenseForm({
   const category = lookups.categories.find((c) => c.id === draft.categoryId);
   const subs = category?.subs ?? [];
 
-  // Keep the current values selectable even if they're older than the lookup window.
   const accountOptions = lookups.accounts.map((a) => ({ value: a.id, label: a.name }));
   if (draft.assetId && !accountOptions.some((o) => o.value === draft.assetId)) {
     accountOptions.unshift({ value: draft.assetId, label: draft.account });

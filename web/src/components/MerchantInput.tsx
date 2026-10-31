@@ -4,7 +4,6 @@ import { Highlight, inputClass, optionClass, popoverClass, type FieldTone } from
 
 type Item = { kind: "merchant"; merchant: Merchant } | { kind: "new"; name: string };
 
-/** Free-text merchant field that also offers previous merchants. */
 export function MerchantInput({
   id,
   value,
@@ -27,7 +26,6 @@ export function MerchantInput({
   const [typed, setTyped] = useState(false);
   const [active, setActive] = useState(0);
 
-  // Until the user types, show recent merchants rather than filtering by the prefilled value.
   const query = typed ? value.trim() : "";
   const q = query.toLowerCase();
   const matches = q ? merchants.filter((m) => m.name.toLowerCase().includes(q)).sort((a, b) => b.count - a.count).slice(0, 5) : [];
@@ -108,7 +106,6 @@ export function MerchantInput({
             e.preventDefault();
             choose(items[active]);
           } else if (e.key === "Escape" && open) {
-            // Close just the list, not the drawer around it.
             e.stopPropagation();
             close();
           }

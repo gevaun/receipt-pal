@@ -21,7 +21,6 @@ export function Categories() {
 
   const rows = useMemo(() => {
     const byId = new Map<string, Row>();
-    // Start from every known category so unused ones still show with 0.00.
     for (const c of lookups.categories) {
       byId.set(c.id, { id: c.id, name: c.name, total: 0, subs: c.subs.map((s) => ({ ...s, total: 0 })) });
     }

@@ -12,7 +12,6 @@ BaseUrlSource = Literal["file", "env"]
 
 
 def resolve_money_manager_base_url() -> tuple[str | None, BaseUrlSource | None]:
-    """The address saved from the web app wins; MONEY_MANAGER_BASE_URL is the fallback."""
     saved = settings_store.load().money_manager_base_url
     if saved:
         return saved.rstrip("/"), "file"

@@ -80,7 +80,6 @@ async def create_transaction(
     sub_category: Annotated[str, Form(alias="subCategory")],
     mb_content: Annotated[str, Form(alias="mbContent")],
     asset_id: Annotated[str, Form(alias="assetId")],
-    # Category IDs are small integers for built-in categories and GUIDs for user-created ones.
     mcid: Annotated[str, Form()],
     mcscid: Annotated[str, Form()],
     mb_detail_content: Annotated[str, Form(alias="mbDetailContent")] = "",

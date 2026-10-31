@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-/* Dark values are the defaults; [data-theme="light"] below overrides them.
-   index.html sets data-theme before first paint (see lib/theme.ts). */
 @theme {
   --color-void: #0a0b0d;
   --color-panel: #131519;
@@ -13,9 +11,7 @@
   --color-bar: #5a606b;
   --color-fg: #ecedee;
   --color-muted: #8b9099;
-  /* Accent for text, icons, focus and highlights. */
   --color-lime: #d4ff3a;
-  /* Fill of the primary button; bright lime in both themes. */
   --color-cta: #d4ff3a;
   --color-cta-hover: #c4f020;
   --color-on-cta: #0a0b0d;
@@ -88,13 +84,11 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Faint dot grid behind page content. */
 @utility dot-grid {
   background-image: radial-gradient(circle at 1px 1px, var(--grid-dot) 1px, transparent 0);
   background-size: 18px 18px;
 }
 
-/* Thermal receipt with a torn bottom edge. */
 @utility receipt-paper {
   -webkit-mask:
     linear-gradient(#000, #000) 0 0 / 100% calc(100% - 7px) no-repeat,

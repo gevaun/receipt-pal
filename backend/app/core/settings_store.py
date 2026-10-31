@@ -1,10 +1,3 @@
-"""User-editable settings persisted to a local JSON file.
-
-The Money Manager server's address changes between sessions, so it's set from
-the web app and saved here rather than in .env. RECEIPT_PAL_SETTINGS_FILE
-overrides the location (tests point it at a temp file).
-"""
-
 import logging
 import os
 import threading
@@ -43,14 +36,12 @@ def save(settings: StoredSettings) -> None:
     path = settings_path()
     with _write_lock:
         path.parent.mkdir(parents=True, exist_ok=True)
-        # Write then rename so a crash never leaves a half-written file.
         tmp = path.with_name(f"{path.name}.tmp")
         tmp.write_text(settings.model_dump_json(indent=2), encoding="utf-8")
         os.replace(tmp, path)
 
 
 def normalize_base_url(raw: str) -> str:
-    """Accept "192.168.1.20:8888" or a full URL; return "http://host:port" with no trailing /."""
     value = raw.strip()
     if not value:
         raise ValueError("Enter the Money Manager address, e.g. 192.168.1.20:8888")
@@ -60,7 +51,7 @@ def normalize_base_url(raw: str) -> str:
     if parts.scheme not in ("http", "https") or not parts.hostname:
         raise ValueError("Enter an address like 192.168.1.20:8888")
     try:
-        parts.port  # noqa: B018 - raises ValueError for a non-numeric or out-of-range port
+        _ = parts.port
     except ValueError as exc:
         raise ValueError("The port must be a number from 1 to 65535") from exc
     if parts.query or parts.fragment:

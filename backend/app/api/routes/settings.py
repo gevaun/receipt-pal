@@ -13,7 +13,6 @@ log = logging.getLogger(__name__)
 
 class Settings(BaseModel):
     money_manager_base_url: str | None
-    # Where the address came from: saved from the web app, or the .env fallback.
     source: BaseUrlSource | None
 
 

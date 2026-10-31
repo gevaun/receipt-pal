@@ -59,7 +59,6 @@ const toneLabel: Record<Exclude<FieldTone, "pending">, string> = {
   check: "check",
 };
 
-/** Label row plus control; `tone` marks values filled in from a receipt. */
 export function Field({
   label,
   tone,
@@ -139,7 +138,6 @@ export function Select({
   );
 }
 
-/** Bolds the part of `text` that matches `query`. */
 export function Highlight({ text, query }: { text: string; query: string }) {
   const index = query ? text.toLowerCase().indexOf(query.toLowerCase()) : -1;
   if (index < 0) return <>{text}</>;
@@ -158,7 +156,6 @@ export interface ComboOption {
   hint?: string;
 }
 
-/** Type-to-filter picker restricted to `options`. */
 export function Combobox({
   id,
   options,
