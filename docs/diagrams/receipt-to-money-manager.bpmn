@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_ReceiptPal"
+                  targetNamespace="https://github.com/receipt-pal"
+                  exporter="Claude Code" exporterVersion="1.0">
+  <bpmn:process id="Process_ReceiptToMoneyManager" name="Receipt to Money Manager transaction" isExecutable="false">
+
+    <bpmn:startEvent id="Start_ReceiptPhoto" name="Receipt photo taken">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Task_Capture" name="Capture photo with rear camera and compress">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="Task_Extract" name="Extract fields with LLM (guardrails on input)">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_Validate" name="Validate output: totals, GCT, date range, currency, category exists">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="Task_Review" name="Review fields beside image, low-confidence fields highlighted">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Approve" name="Approved?">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_Approve_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Approve_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_CheckDuplicate" name="Check Money Manager for duplicate (date, amount, vendor)">
+      <bpmn:incoming>Flow_Approve_Yes</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Duplicate" name="Duplicate found?">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_Dup_Yes</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Dup_No</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Task_CreateTransaction" name="Create transaction in Money Manager">
+      <bpmn:incoming>Flow_Dup_No</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="Task_LogCorrections" name="Append corrections to corrections.jsonl">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="End_Written" name="Transaction written">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="End_Discarded" name="Draft kept, nothing written">
+      <bpmn:incoming>Flow_Approve_No</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:endEvent id="End_Duplicate" name="Duplicate, not written">
+      <bpmn:incoming>Flow_Dup_Yes</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_ReceiptPhoto" targetRef="Task_Capture" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Capture" targetRef="Task_Extract" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Extract" targetRef="Task_Validate" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Task_Validate" targetRef="Task_Review" />
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="Task_Review" targetRef="Gateway_Approve" />
+    <bpmn:sequenceFlow id="Flow_Approve_Yes" name="Yes" sourceRef="Gateway_Approve" targetRef="Task_CheckDuplicate" />
+    <bpmn:sequenceFlow id="Flow_Approve_No" name="No" sourceRef="Gateway_Approve" targetRef="End_Discarded" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="Task_CheckDuplicate" targetRef="Gateway_Duplicate" />
+    <bpmn:sequenceFlow id="Flow_Dup_Yes" name="Yes" sourceRef="Gateway_Duplicate" targetRef="End_Duplicate" />
+    <bpmn:sequenceFlow id="Flow_Dup_No" name="No" sourceRef="Gateway_Duplicate" targetRef="Task_CreateTransaction" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Task_CreateTransaction" targetRef="Task_LogCorrections" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="Task_LogCorrections" targetRef="End_Written" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Diagram_ReceiptToMoneyManager">
+    <bpmndi:BPMNPlane id="Plane_ReceiptToMoneyManager" bpmnElement="Process_ReceiptToMoneyManager">
+
+      <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start_ReceiptPhoto">
+        <dc:Bounds x="152" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Capture" bpmnElement="Task_Capture">
+        <dc:Bounds x="230" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Extract" bpmnElement="Task_Extract">
+        <dc:Bounds x="380" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Validate" bpmnElement="Task_Validate">
+        <dc:Bounds x="530" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Review" bpmnElement="Task_Review">
+        <dc:Bounds x="680" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Approve" bpmnElement="Gateway_Approve" isMarkerVisible="true">
+        <dc:Bounds x="830" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CheckDuplicate" bpmnElement="Task_CheckDuplicate">
+        <dc:Bounds x="920" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Duplicate" bpmnElement="Gateway_Duplicate" isMarkerVisible="true">
+        <dc:Bounds x="1070" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_CreateTransaction" bpmnElement="Task_CreateTransaction">
+        <dc:Bounds x="1170" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_LogCorrections" bpmnElement="Task_LogCorrections">
+        <dc:Bounds x="1320" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Written" bpmnElement="End_Written">
+        <dc:Bounds x="1472" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Discarded" bpmnElement="End_Discarded">
+        <dc:Bounds x="837" y="300" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Duplicate" bpmnElement="End_Duplicate">
+        <dc:Bounds x="1077" y="300" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Edge_1" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="200" />
+        <di:waypoint x="230" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_2" bpmnElement="Flow_2">
+        <di:waypoint x="330" y="200" />
+        <di:waypoint x="380" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_3" bpmnElement="Flow_3">
+        <di:waypoint x="480" y="200" />
+        <di:waypoint x="530" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_4" bpmnElement="Flow_4">
+        <di:waypoint x="630" y="200" />
+        <di:waypoint x="680" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_5" bpmnElement="Flow_5">
+        <di:waypoint x="780" y="200" />
+        <di:waypoint x="830" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Approve_Yes" bpmnElement="Flow_Approve_Yes">
+        <di:waypoint x="880" y="200" />
+        <di:waypoint x="920" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Approve_No" bpmnElement="Flow_Approve_No">
+        <di:waypoint x="855" y="225" />
+        <di:waypoint x="855" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_6" bpmnElement="Flow_6">
+        <di:waypoint x="1020" y="200" />
+        <di:waypoint x="1070" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Dup_Yes" bpmnElement="Flow_Dup_Yes">
+        <di:waypoint x="1095" y="225" />
+        <di:waypoint x="1095" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Dup_No" bpmnElement="Flow_Dup_No">
+        <di:waypoint x="1120" y="200" />
+        <di:waypoint x="1170" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_7" bpmnElement="Flow_7">
+        <di:waypoint x="1270" y="200" />
+        <di:waypoint x="1320" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_8" bpmnElement="Flow_8">
+        <di:waypoint x="1420" y="200" />
+        <di:waypoint x="1472" y="200" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

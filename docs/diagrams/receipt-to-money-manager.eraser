@@ -1,0 +1,46 @@
+title Receipt to Money Manager
+
+User [color: lightblue] {
+  Capture receipt photo [icon: camera]
+  Review fields [icon: edit]
+  Approved? [type: gateway, icon: check]
+  Draft kept [type: event, icon: x-circle]
+  Duplicate warning [type: event, icon: alert-triangle]
+  Transaction written [type: event, icon: check-circle]
+}
+
+System [color: orange] {
+  POST /extract-receipt [icon: server]
+  Validate upload (image type, 10 MB) [icon: shield]
+  Build Gemini request [icon: file-text]
+  Parse and validate JSON [icon: shield]
+  Check for duplicate [icon: search]
+  "Duplicate found?" [type: gateway, icon: filter]
+  Create transaction [icon: send]
+  Log corrections [icon: file-text]
+}
+
+Gemini API [color: purple] {
+  generateContent [icon: cpu]
+}
+
+Money Manager [color: green] {
+  Transactions [icon: database]
+}
+
+Capture receipt photo > POST /extract-receipt : Image and known merchants
+POST /extract-receipt > Validate upload (image type, 10 MB)
+Validate upload (image type, 10 MB) > Build Gemini request : Prompt, JSON schema, temperature 0
+Build Gemini request > generateContent : Image as base64 inline_data
+generateContent > Parse and validate JSON : Merchant, date, amount, description, lines
+Parse and validate JSON > Review fields : Pre-filled form
+Review fields > Approved?
+Approved? > Check for duplicate : Yes
+Approved? > Draft kept : No
+Check for duplicate -- Transactions : Query by date, amount, vendor
+Check for duplicate > "Duplicate found?"
+"Duplicate found?" --> Duplicate warning : Yes
+"Duplicate found?" > Create transaction : No
+Create transaction --> Transactions : Write
+Create transaction > Log corrections
+Log corrections > Transaction written

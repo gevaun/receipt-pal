@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Receipt Pal Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+  :root {
+    --void: #0A0B0D; --panel: #131519; --raise: #1A1D22; --line: #262A31; --text: #ECEDEE; --muted: #8B9099;
+    --lime: #D4FF3A; --thermal: #F3F1EA; --amber: #FFB547; --alert: #FF5A36;
+    --board: #1E2025;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
+  body {
+    background: var(--board); color: var(--text);
+    font: 400 12px/1.45 "Geist", sans-serif; -webkit-font-smoothing: antialiased;
+    display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 28px; padding: 36px;
+  }
+  .mono { font-family: "Geist Mono", monospace; font-variant-numeric: tabular-nums; }
+
+  /* Browser frame */
+  .frame { background: var(--void); border: 1px solid #2C3037; border-radius: 12px; overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: 0 30px 60px -30px rgba(0,0,0,.6); }
+  .chrome { height: 34px; display: flex; align-items: center; gap: 14px; padding: 0 14px; background: #101215; border-bottom: 1px solid var(--line); }
+  .dots { display: flex; gap: 6px; } .dots i { width: 9px; height: 9px; border-radius: 50%; background: #2E323A; display: block; }
+  .url { width: 280px; height: 20px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line);
+    font: 400 10.5px "Geist Mono", monospace; color: var(--muted); display: flex; align-items: center; padding: 0 10px; }
+  .app { flex: 1; display: grid; grid-template-columns: 146px 1fr; min-height: 0; }
+
+  /* Nav */
+  nav { border-right: 1px solid var(--line); padding: 24px 14px; display: flex; flex-direction: column; gap: 28px; }
+  .brand { display: flex; align-items: center; gap: 9px; padding: 0 6px; }
+  .mark { width: 20px; height: 20px; border: 1.5px solid var(--text); border-radius: 5px; position: relative; }
+  .mark::after { content: ""; position: absolute; left: 2px; right: 2px; top: 7px; height: 2px; background: var(--lime); box-shadow: 0 0 6px var(--lime); }
+  .wordmark { font: 600 14px/1 "Geist"; letter-spacing: -.02em; }
+  .links { display: flex; flex-direction: column; gap: 3px; }
+  .links a { display: flex; align-items: center; gap: 10px; padding: 7px 9px; border: 1px solid transparent; border-radius: 7px;
+    color: var(--muted); font-weight: 500; }
+  .links a svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .links a.on { background: var(--raise); border-color: var(--line); color: var(--text); }
+  .links a.on svg { stroke: var(--lime); }
+  .navfoot { margin-top: auto; padding: 0 6px; font-size: 10.5px; color: var(--muted); display: flex; align-items: center; gap: 7px; }
+  .led { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); box-shadow: 0 0 6px var(--lime); flex: none; }
+
+  main { padding: 26px 30px 24px; display: flex; flex-direction: column; min-width: 0; min-height: 0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.035) 1px, transparent 0); background-size: 18px 18px; }
+  .head { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+  .eyebrow { font: 500 9.5px "Geist Mono"; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  h1 { font: 500 22px/1.1 "Geist"; letter-spacing: -.03em; margin-top: 3px; }
+  .step { display: flex; gap: 4px; margin-left: 6px; align-self: flex-end; }
+  .step span { width: 22px; height: 22px; border: 1px solid var(--line); border-radius: 6px; display: grid; place-items: center; color: var(--muted); font-size: 11px; }
+  .btn { background: var(--lime); color: #0A0B0D; font-weight: 600; font-size: 11.5px; padding: 7px 13px; border-radius: 7px;
+    display: inline-flex; gap: 7px; align-items: center; white-space: nowrap; }
+  .btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); font-weight: 500; }
+  .push { margin-left: auto; }
+
+  /* Dashboard */
+  .hero .num { font: 300 62px/1 "Geist"; letter-spacing: -.055em; margin: 10px 0 10px; font-variant-numeric: tabular-nums; }
+  .hero .num small { font-size: 30px; color: var(--muted); letter-spacing: -.03em; }
+  .delta { font-size: 11px; color: var(--muted); display: flex; gap: 14px; }
+  .delta b { color: var(--text); font-weight: 500; }
+  .chart { margin-top: 30px; position: relative; }
+  .bars { display: flex; align-items: flex-end; gap: 4px; height: 190px; border-bottom: 1px solid var(--line); position: relative;
+    background: linear-gradient(var(--line), var(--line)) 0 0 / 100% 1px no-repeat, linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat; }
+  .bars i { flex: 1; background: #2B2F37; border-radius: 2px 2px 0 0; min-height: 3px; }
+  .bars i.hit { background: #5A606B; }
+  .bars i.max { background: var(--lime); box-shadow: 0 0 14px rgba(212,255,58,.35); }
+  .tip { position: absolute; top: -8px; right: 46px; background: var(--raise); border: 1px solid var(--line); border-radius: 6px;
+    padding: 5px 8px; font: 400 10px "Geist Mono"; color: var(--muted); }
+  .tip b { color: var(--text); font-weight: 500; }
+  .axis { display: flex; justify-content: space-between; font: 400 9.5px "Geist Mono"; color: var(--muted); margin-top: 6px; }
+  .split { display: grid; grid-template-columns: 1fr 1.25fr; gap: 28px; margin-top: 34px; }
+  .sec-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .sec-h h2 { font: 500 12.5px "Geist"; }
+  .sec-h span { font-size: 10.5px; color: var(--muted); }
+  .cat { margin-bottom: 14px; }
+  .cat .row { display: flex; justify-content: space-between; font-size: 11.5px; }
+  .cat .row .mono { color: var(--muted); font-size: 10.5px; }
+  .cat .bar { height: 3px; background: #22252B; border-radius: 2px; margin-top: 7px; }
+  .cat .bar i { display: block; height: 100%; background: var(--text); border-radius: 2px; }
+  .tx { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--line); }
+  .tx:last-child { border-bottom: 1px solid var(--line); }
+  .tx .ico { width: 24px; height: 24px; border-radius: 6px; background: var(--raise); border: 1px solid var(--line); display: grid; place-items: center; flex: none; }
+  .tx .ico svg { width: 12px; height: 12px; fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .tx .ico.scanned svg { stroke: var(--lime); }
+  .tx .who { flex: 1; min-width: 0; }
+  .tx .who div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11.5px; }
+  .tx .who small { color: var(--muted); font-size: 10px; }
+  .tx .amt { font: 500 11.5px "Geist Mono"; }
+
+  /* Scan screen */
+  .steps { display: flex; align-items: center; gap: 8px; margin: -8px 0 24px; font: 500 10px "Geist Mono"; letter-spacing: .06em; color: var(--muted); }
+  .steps .s { display: flex; align-items: center; gap: 6px; }
+  .steps .s i { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line); display: grid; place-items: center; font-style: normal; font-size: 8.5px; }
+  .steps .s.done i { background: var(--raise); color: var(--text); }
+  .steps .s.now { color: var(--text); }
+  .steps .s.now i { border-color: var(--lime); color: var(--lime); box-shadow: 0 0 0 3px rgba(212,255,58,.12); }
+  .steps .dash { flex: 0 0 22px; height: 1px; background: var(--line); }
+  .scan { flex: 1; display: grid; grid-template-columns: 228px 1fr; gap: 26px; min-height: 0; }
+
+  .printer { display: flex; flex-direction: column; align-items: center; }
+  .slot { width: 100%; height: 22px; border-radius: 11px; background: #16181C; border: 1px solid #30343C; position: relative; z-index: 2;
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,.6); }
+  .slot::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 6px; height: 2px; border-radius: 2px; background: var(--lime); box-shadow: 0 0 10px var(--lime); }
+  .paper { width: 196px; margin-top: -11px; background: var(--thermal); color: #26231D; padding: 22px 14px 22px;
+    font: 400 9.5px/1.55 "Geist Mono"; position: relative;
+    box-shadow: 0 20px 40px -18px rgba(0,0,0,.8);
+    -webkit-mask: linear-gradient(#000, #000) 0 0 / 100% calc(100% - 6px) no-repeat,
+                  conic-gradient(from -45deg at 50% 0, #000 90deg, transparent 0) 0 100% / 8px 6px repeat-x;
+            mask: linear-gradient(#000, #000) 0 0 / 100% calc(100% - 6px) no-repeat,
+                  conic-gradient(from -45deg at 50% 0, #000 90deg, transparent 0) 0 100% / 8px 6px repeat-x; }
+  .paper .c { text-align: center; }
+  .paper .store { font-weight: 500; font-size: 11px; letter-spacing: .04em; }
+  .paper .sm { font-size: 8.5px; color: #6E695F; }
+  .paper .hr { border-top: 1px dashed #B6B0A3; margin: 8px 0; }
+  .paper .ln { display: flex; justify-content: space-between; gap: 6px; }
+  .paper .ln span:first-child { white-space: nowrap; overflow: hidden; }
+  .paper .ln.new { position: relative; }
+  .head-line { position: relative; height: 0; margin: 7px -14px 10px; }
+  .head-line::before { content: ""; position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: var(--lime);
+    box-shadow: 0 0 12px 2px rgba(212,255,58,.75); }
+  .head-line::after { content: ""; position: absolute; left: 0; right: 0; bottom: 1px; height: 26px;
+    background: linear-gradient(to top, rgba(212,255,58,.22), transparent); }
+  .ghost-ln { height: 6px; border-radius: 3px; background: #E1DDD2; margin: 9px 0; }
+  .file { width: 100%; margin-top: 18px; display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .thumb { width: 34px; height: 42px; border-radius: 4px; flex: none;
+    background: linear-gradient(160deg, #6D6A62, #3B3934 60%, #22211E); position: relative; overflow: hidden; }
+  .thumb::after { content: ""; position: absolute; left: 9px; right: 7px; top: 5px; bottom: 4px; background: #D9D5CA; transform: rotate(-6deg); opacity: .85; }
+  .file .nm { font-size: 11px; } .file .meta { font: 400 9.5px "Geist Mono"; color: var(--muted); }
+  .status { width: 100%; margin-top: 10px; display: flex; justify-content: space-between; font: 400 10px "Geist Mono"; color: var(--muted); }
+  .status b { color: var(--lime); font-weight: 500; }
+  .prog { width: 100%; height: 2px; background: var(--line); border-radius: 2px; margin-top: 7px; }
+  .prog i { display: block; width: 46%; height: 100%; background: var(--lime); border-radius: 2px; box-shadow: 0 0 8px var(--lime); }
+
+  .review { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .review .title { display: flex; justify-content: space-between; align-items: baseline; }
+  .review .title h3 { font: 500 14px "Geist"; letter-spacing: -.01em; }
+  .review .title span { font: 400 9.5px "Geist Mono"; color: var(--muted); }
+  .f { position: relative; }
+  .f label { white-space: nowrap; display: flex; justify-content: space-between; font: 500 9px "Geist Mono"; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+  .f label em { font-style: normal; letter-spacing: .04em; text-transform: none; color: var(--muted); }
+  .f label em.ai { color: var(--lime); }
+  .f label em.low { color: var(--amber); }
+  .in { border: 1px solid var(--line); background: var(--panel); border-radius: 7px; padding: 7px 9px; font-size: 11.5px;
+    display: flex; align-items: center; gap: 7px; min-height: 31px; }
+  .in .v { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .in .ic { width: 11px; height: 11px; flex: none; fill: none; stroke: var(--muted); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .in.filled { border-color: rgba(212,255,58,.35); }
+  .in.low { border-color: rgba(255,181,71,.55); }
+  .in .tag { font: 500 9px "Geist Mono"; color: var(--void); background: var(--lime); border-radius: 4px; padding: 1px 5px; }
+  .in.wait { color: var(--muted); }
+  .shimmer { flex: 1; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #22252B, #343841 50%, #22252B); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .hint { font-size: 10px; color: var(--muted); margin-top: 5px; display: flex; gap: 5px; align-items: center; }
+  .hint svg { width: 10px; height: 10px; fill: none; stroke: var(--lime); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .acts { margin-top: 6px; display: flex; align-items: center; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .btn.off { background: rgba(212,255,58,.16); color: rgba(212,255,58,.6); }
+  .acts .note { margin-left: auto; font: 400 9.5px "Geist Mono"; color: var(--muted); }
+
+  /* Rail */
+  .rail { background: #15171B; border: 1px solid #2C3037; border-radius: 12px; padding: 30px 26px; display: flex; flex-direction: column; gap: 32px; }
+  .rail .lbl { font: 500 10px "Geist Mono"; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .type { display: flex; flex-direction: column; gap: 18px; }
+  .type .sample { line-height: 1; margin-bottom: 6px; }
+  .type .nm { font-size: 12.5px; font-weight: 500; }
+  .type .role { font-size: 11px; color: var(--muted); }
+  .dom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sw { border-radius: 8px; height: 92px; padding: 10px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid rgba(255,255,255,.08); }
+  .sw b { font-size: 12px; font-weight: 600; } .sw span { font: 400 11px "Geist Mono"; opacity: .75; }
+  .sup { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
+  .ch { display: flex; gap: 9px; align-items: center; }
+  .ch i { width: 26px; height: 26px; border-radius: 6px; display: block; border: 1px solid rgba(255,255,255,.1); flex: none; }
+  .ch b { display: block; font-size: 11.5px; font-weight: 500; line-height: 1.2; }
+  .ch span { font: 400 10.5px "Geist Mono"; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- Screen 1: Dashboard -->
+<section class="frame">
+  <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">localhost:5173/</div></div>
+  <div class="app">
+    <nav>
+      <div class="brand"><div class="mark"></div><div class="wordmark">Receipt Pal</div></div>
+      <div class="links">
+        <a class="on"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Dashboard</a>
+        <a><svg viewBox="0 0 16 16"><path d="M2 5V3a1 1 0 0 1 1-1h2M11 2h2a1 1 0 0 1 1 1v2M14 11v2a1 1 0 0 1-1 1h-2M5 14H3a1 1 0 0 1-1-1v-2M2 8h12"/></svg>Scan</a>
+        <a><svg viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6"/></svg>Transactions</a>
+        <a><svg viewBox="0 0 16 16"><path d="M2.5 8.6V3a.5.5 0 0 1 .5-.5h5.6L14 7.9l-6.1 6.1z"/><circle cx="5.6" cy="5.6" r="1"/></svg>Categories</a>
+      </div>
+      <div class="navfoot"><span class="led"></span>Money Manager</div>
+    </nav>
+    <main>
+      <div class="head">
+        <div><div class="eyebrow">Overview</div><h1>October 2026</h1></div>
+        <div class="step"><span>‹</span><span>›</span></div>
+        <div class="btn ghost push">Add manually</div>
+        <div class="btn"><svg viewBox="0 0 16 16"><path d="M2 5V3a1 1 0 0 1 1-1h2M11 2h2a1 1 0 0 1 1 1v2M14 11v2a1 1 0 0 1-1 1h-2M5 14H3a1 1 0 0 1-1-1v-2M2 8h12"/></svg>Scan receipt</div>
+      </div>
+      <div class="hero">
+        <div class="eyebrow">Spent this month</div>
+        <div class="num">$15,855<small>.36</small></div>
+        <div class="delta"><span><b>5</b> expenses</span><span><b>2</b> scanned</span><span><b>+12.4%</b> vs Sep</span></div>
+      </div>
+      <div class="chart">
+        <div class="tip">25 OCT · <b>15,819.58</b></div>
+        <div class="bars">
+          <i></i><i></i><i class="hit" style="height:9%"></i><i class="hit" style="height:6%"></i><i></i><i></i><i></i><i class="hit" style="height:8%"></i><i></i><i class="hit" style="height:8%"></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i class="max" style="height:84%"></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="axis"><span>01</span><span>08</span><span>15</span><span>22</span><span>31</span></div>
+      </div>
+      <div class="split">
+        <div>
+          <div class="sec-h"><h2>Categories</h2><span>3</span></div>
+          <div class="cat"><div class="row"><span>Household</span><span class="mono">15,819.58</span></div><div class="bar"><i style="width:99%"></i></div></div>
+          <div class="cat"><div class="row"><span>Food</span><span class="mono">30.78</span></div><div class="bar"><i style="width:3%"></i></div></div>
+          <div class="cat"><div class="row"><span>Utilities</span><span class="mono">5.00</span></div><div class="bar"><i style="width:1.5%"></i></div></div>
+        </div>
+        <div>
+          <div class="sec-h"><h2>Recent</h2><span>View all</span></div>
+          <div class="tx"><div class="ico scanned"><svg viewBox="0 0 16 16"><path d="M2 5V3a1 1 0 0 1 1-1h2M11 2h2a1 1 0 0 1 1 1v2M14 11v2a1 1 0 0 1-1 1h-2M5 14H3a1 1 0 0 1-1-1v-2M2 8h12"/></svg></div><div class="who"><div>Super Valu Fresh Foods</div><small>25 Oct · Groceries</small></div><div class="amt">15,819.58</div></div>
+          <div class="tx"><div class="ico scanned"><svg viewBox="0 0 16 16"><path d="M2 5V3a1 1 0 0 1 1-1h2M11 2h2a1 1 0 0 1 1 1v2M14 11v2a1 1 0 0 1-1 1h-2M5 14H3a1 1 0 0 1-1-1v-2M2 8h12"/></svg></div><div class="who"><div>Juici Patties</div><small>10 Oct · Lunch</small></div><div class="amt">9.20</div></div>
+          <div class="tx"><div class="ico"><svg viewBox="0 0 16 16"><path d="M4 12 12 4M5 4h7v7"/></svg></div><div class="who"><div>City Flames Buffet &amp; Grill</div><small>08 Oct · Breakfast</small></div><div class="amt">9.59</div></div>
+          <div class="tx"><div class="ico"><svg viewBox="0 0 16 16"><path d="M4 12 12 4M5 4h7v7"/></svg></div><div class="who"><div>Railway Corporation</div><small>04 Oct · Digital</small></div><div class="amt">5.00</div></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- Screen 2: Scan & extract -->
+<section class="frame">
+  <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">localhost:5173/scan</div></div>
+  <div class="app">
+    <nav>
+      <div class="brand"><div class="mark"></div><div class="wordmark">Receipt Pal</div></div>
+      <div class="links">
+        <a><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Dashboard</a>
+        <a class="on"><svg viewBox="0 0 16 16"><path d="M2 5V3a1 1 0 0 1 1-1h2M11 2h2a1 1 0 0 1 1 1v2M14 11v2a1 1 0 0 1-1 1h-2M5 14H3a1 1 0 0 1-1-1v-2M2 8h12"/></svg>Scan</a>
+        <a><svg viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6"/></svg>Transactions</a>
+        <a><svg viewBox="0 0 16 16"><path d="M2.5 8.6V3a.5.5 0 0 1 .5-.5h5.6L14 7.9l-6.1 6.1z"/><circle cx="5.6" cy="5.6" r="1"/></svg>Categories</a>
+      </div>
+      <div class="navfoot"><span class="led"></span>Money Manager</div>
+    </nav>
+    <main>
+      <div class="head">
+        <div><div class="eyebrow">New expense</div><h1>Scan receipt</h1></div>
+      </div>
+      <div class="steps">
+        <div class="s done"><i>✓</i>UPLOAD</div><div class="dash"></div>
+        <div class="s now"><i>2</i>EXTRACT</div><div class="dash"></div>
+        <div class="s"><i>3</i>REVIEW</div><div class="dash"></div>
+        <div class="s"><i>4</i>SAVE</div>
+      </div>
+      <div class="scan">
+        <div class="printer">
+          <div class="slot"></div>
+          <div class="paper">
+            <div class="c store">SUPER VALU</div>
+            <div class="c store" style="margin-top:-2px">FRESH FOODS</div>
+            <div class="c sm">Manor Park Plaza · Kingston</div>
+            <div class="hr"></div>
+            <div class="ln"><span>25/10/2026 14:32</span><span>REG 03</span></div>
+            <div class="hr"></div>
+            <div class="ln"><span>JASMINE RICE 2KG</span><span>1,250.00</span></div>
+            <div class="ln"><span>WHOLE CHICKEN 1.8KG</span><span>2,184.60</span></div>
+            <div class="ln"><span>CALLALOO BUNCH</span><span>350.00</span></div>
+            <div class="ln"><span>ACKEE 540G</span><span>1,395.00</span></div>
+            <div class="head-line"></div>
+            <div class="ghost-ln" style="width:82%"></div>
+            <div class="ghost-ln" style="width:64%"></div>
+            <div class="ghost-ln" style="width:74%"></div>
+            <div class="hr" style="opacity:.5"></div>
+            <div class="ghost-ln" style="width:56%;margin-left:auto"></div>
+            <div class="ghost-ln" style="width:48%;margin-left:auto"></div>
+          </div>
+          <div class="file">
+            <div class="thumb"></div>
+            <div><div class="nm">IMG_2041.jpg</div><div class="meta">2.1 MB · 3024×4032</div></div>
+          </div>
+          <div class="status"><span><b>Gemini</b> reading line 4</span><span>46%</span></div>
+          <div class="prog"><i></i></div>
+        </div>
+
+        <div class="review">
+          <div class="title"><h3>Review</h3><span>fields fill as they're read</span></div>
+          <div class="f"><label>Merchant <em class="ai">extracted</em></label>
+            <div class="in filled"><span class="v">Super Valu Fresh Foods</span><svg class="ic" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div>
+            <div class="hint"><svg viewBox="0 0 12 12"><path d="M2.5 6.2 5 8.5l4.5-5"/></svg>Matches a previous merchant · 6×</div>
+          </div>
+          <div class="two">
+            <div class="f"><label>Date <em class="ai">extracted</em></label><div class="in filled mono"><span class="v">2026-10-25</span></div></div>
+            <div class="f"><label>Amount</label><div class="in wait"><span class="shimmer"></span></div></div>
+          </div>
+          <div class="f"><label>Account <em>last used</em></label>
+            <div class="in"><span class="v">Scotia Mastercard</span><svg class="ic" viewBox="0 0 12 12"><path d="M3.5 4.5 6 2 8.5 4.5M3.5 7.5 6 10 8.5 7.5"/></svg></div>
+          </div>
+          <div class="two">
+            <div class="f"><label>Category <em class="ai">suggested</em></label><div class="in filled"><span class="v">Household</span><svg class="ic" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div></div>
+            <div class="f"><label>Sub <em class="low">check</em></label><div class="in low"><span class="v">Groceries</span><svg class="ic" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div></div>
+          </div>
+          <div class="f"><label>Note</label><div class="in wait"><span class="shimmer" style="max-width:70%"></span></div></div>
+          <div class="acts">
+            <div class="btn off">Save to Money Manager</div>
+            <div class="btn ghost">Discard</div>
+            
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- Design-system rail -->
+<aside class="rail">
+  <div>
+    <div class="lbl">Typography</div>
+    <div class="type">
+      <div><div class="sample" style="font-size:42px;font-weight:300;letter-spacing:-.05em">15,855.36</div><div class="nm">Geist Light</div><div class="role">Display · hero figures</div></div>
+      <div><div class="sample" style="font-size:24px;font-weight:500;letter-spacing:-.03em">Scan receipt</div><div class="nm">Geist</div><div class="role">UI · headings, labels, body</div></div>
+      <div><div class="sample mono" style="font-size:20px">RICE 2KG 1,250.00</div><div class="nm">Geist Mono</div><div class="role">Figures · receipt print, amounts</div></div>
+    </div>
+  </div>
+  <div>
+    <div class="lbl">Core colors</div>
+    <div class="dom">
+      <div class="sw" style="background:#0A0B0D"><b>Void</b><span>#0A0B0D</span></div>
+      <div class="sw" style="background:#131519"><b>Panel</b><span>#131519</span></div>
+      <div class="sw" style="background:#ECEDEE;color:#0A0B0D"><b>Text</b><span>#ECEDEE</span></div>
+      <div class="sw" style="background:#D4FF3A;color:#0A0B0D"><b>Signal Lime</b><span>#D4FF3A</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="lbl">Supporting</div>
+    <div class="sup">
+      <div class="ch"><i style="background:#262A31"></i><div><b>Line</b><span>#262A31</span></div></div>
+      <div class="ch"><i style="background:#8B9099"></i><div><b>Muted</b><span>#8B9099</span></div></div>
+      <div class="ch"><i style="background:#F3F1EA"></i><div><b>Thermal</b><span>#F3F1EA</span></div></div>
+      <div class="ch"><i style="background:#FFB547"></i><div><b>Check</b><span>#FFB547</span></div></div>
+      <div class="ch"><i style="background:#FF5A36"></i><div><b>Alert</b><span>#FF5A36</span></div></div>
+    </div>
+  </div>
+</aside>
+
+</body>
+</html>

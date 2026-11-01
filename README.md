@@ -7,7 +7,7 @@ Money Manager as a transaction.
 
 - `backend`: FastAPI backend (Python, managed with [uv](https://docs.astral.sh/uv/))
 - `web`: React + Tailwind web app (Vite, TypeScript)
-- `docs/DECISIONS.md`: running log of design decisions
+- `docs`: `DECISIONS.md` (design decision log), `api.md`, `diagrams/` (Eraser and BPMN flows), `design/` (UI boards)
 
 ## Development
 
