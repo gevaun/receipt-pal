@@ -18,16 +18,16 @@ Receipt Pal is an attempt to bridge that gap. It provides a web interface for Mo
 
 ## Project status
 
-**Receipt scanning is a demo, not AI extraction yet.** The scan screen accepts an image but always replays the same sample receipt; it does not read or upload the image. Review the fields carefully: saving from the demo creates a real transaction in Money Manager. The image is not attached to the transaction.
-
 Currently, Receipt Pal can:
 
 - Connect to Money Manager's PC Manager on your local network.
 - View monthly spending, recent expenses, and category breakdowns.
 - Search and filter transactions, and create, edit, or delete expenses.
-- Preview the planned receipt-to-expense workflow using sample data.
+- Read a receipt photo with Gemini and pre-fill the expense form for you to review.
 
-The intended workflow is to photograph or upload a receipt, use AI to extract its details, review and correct the result, and then save it to Money Manager. The extraction service has not been implemented yet.
+The workflow is to photograph or upload a receipt, let Gemini extract its details, review and correct the result, and then save it to Money Manager. The image is sent to Gemini for extraction only and is not attached to the transaction.
+
+To enable scanning, set `LLM_API_KEY` (a Gemini API key) in `backend/.env`, and optionally `LLM_MODEL` (default `gemini-2.5-flash`). Without a key, the scan screen reports that scanning isn't set up.
 
 ## Screenshots
 

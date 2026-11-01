@@ -210,10 +210,10 @@ export function ExpenseForm({
         </Field>
       </div>
 
-      <Field label="Note" tone={tones.note} hint="optional" htmlFor={`${id}-note`}>
+      <Field label="Description" tone={tones.note} hint="optional" htmlFor={`${id}-note`}>
         <textarea
           id={`${id}-note`}
-          rows={2}
+          rows={6}
           value={draft.note}
           disabled={disabled}
           onChange={(e) => onChange({ note: e.target.value })}

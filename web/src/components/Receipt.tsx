@@ -1,7 +1,16 @@
+import { useEffect, useRef } from "react";
 import type { ReceiptLine } from "../lib/extract";
 import { cx } from "./ui";
 
 export function Receipt({ lines, printing }: { lines: ReceiptLine[]; printing: boolean }) {
+  const paperRef = useRef<HTMLDivElement>(null);
+
+  // Long receipts scroll inside the paper; follow the newest line while it prints.
+  useEffect(() => {
+    const paper = paperRef.current;
+    if (printing && paper) paper.scrollTop = paper.scrollHeight;
+  }, [lines.length, printing]);
+
   return (
     <div className="flex flex-col items-center">
       <div className="relative z-10 h-6 w-full rounded-full border border-line bg-raise shadow-[inset_0_-6px_10px_var(--shadow-strong)]">
@@ -13,7 +22,8 @@ export function Receipt({ lines, printing }: { lines: ReceiptLine[]; printing: b
         />
       </div>
       <div
-        className="receipt-paper relative -mt-3 w-[88%] bg-thermal px-4 pt-6 pb-7 font-mono text-[10.5px] leading-[1.6] text-[#26231d] shadow-[0_24px_40px_-18px_var(--shadow-strong)] ring-1 ring-black/5"
+        ref={paperRef}
+        className="receipt-paper relative -mt-3 max-h-[440px] w-[88%] overflow-y-auto overscroll-contain bg-thermal [scrollbar-width:thin] px-4 pt-6 pb-7 font-mono text-[10.5px] leading-[1.6] text-[#26231d] shadow-[0_24px_40px_-18px_var(--shadow-strong)] ring-1 ring-black/5"
         aria-live="polite"
       >
         {lines.map((line, i) => (

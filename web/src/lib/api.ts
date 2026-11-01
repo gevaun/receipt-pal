@@ -133,6 +133,33 @@ export function createExpense(input: ExpenseInput): Promise<void> {
   );
 }
 
+export interface ScanLine {
+  kind: "title" | "small" | "rule" | "row";
+  text: string;
+  left: string;
+  right: string;
+  strong: boolean;
+}
+
+export interface ScanResult {
+  merchant: string;
+  date: string;
+  amount: number;
+  description: string;
+  lines: ScanLine[];
+}
+
+export function scanReceipt(
+  image: File,
+  merchants: string[],
+  signal: AbortSignal,
+): Promise<ScanResult> {
+  const body = new FormData();
+  body.append("image", image);
+  for (const name of merchants) body.append("merchants", name);
+  return request<ScanResult>("/extract-receipt", { method: "POST", body, signal });
+}
+
 export function updateTransaction(
   original: Transaction,
   input: ExpenseInput,

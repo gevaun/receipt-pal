@@ -7,7 +7,7 @@ import { Receipt } from "../components/Receipt";
 import { Banner, Button, cx, type FieldTone } from "../components/ui";
 import { createExpense } from "../lib/api";
 import { useInvalidate, useLookups } from "../lib/data";
-import { EXTRACTION_IS_MOCK, extractReceipt, type ExtractEvent, type ReceiptLine } from "../lib/extract";
+import { extractReceipt, type ExtractEvent, type ReceiptLine } from "../lib/extract";
 import { today } from "../lib/format";
 import { matchMerchant } from "../lib/lookups";
 
@@ -78,7 +78,8 @@ export function Scan() {
     setError(null);
     setPhase("extracting");
     try {
-      await extractReceipt(next, handleEvent, controller.signal);
+      const merchants = lookupsRef.current.merchants.map((m) => m.name);
+      await extractReceipt(next, merchants, handleEvent, controller.signal);
       setTones((t) => Object.fromEntries(Object.entries(t).map(([k, v]) => [k, v === "pending" ? "check" : v])));
       setPhase("review");
     } catch (e) {
@@ -124,13 +125,7 @@ export function Scan() {
 
   return (
     <div className="mx-auto max-w-[1080px] px-6 py-7 md:px-10">
-      <PageHeader eyebrow="New expense" title="Scan receipt">
-        {EXTRACTION_IS_MOCK && (
-          <span className="mb-1 ml-auto rounded-md border border-check/40 px-2 py-1 font-mono text-[10px] text-check" title="The Gemini extraction endpoint isn't built yet; scans replay a sample receipt.">
-            Demo extraction
-          </span>
-        )}
-      </PageHeader>
+      <PageHeader eyebrow="New expense" title="Scan receipt" />
 
       <Steps phase={phase} />
 
@@ -169,18 +164,22 @@ export function Scan() {
         </label>
       ) : (
         <div className="grid gap-10 md:grid-cols-[260px_1fr]">
-          <div>
-            <Receipt lines={lines} printing={extracting} />
+          <div className="min-w-0">
+            {/* The photo and the read progress sit above the receipt so they stay put as the receipt grows. */}
             {file && (
-              <div className="mt-6 flex items-center gap-3 rounded-lg border border-line bg-panel p-2">
-                {preview && <img src={preview} alt="" className="h-12 w-10 shrink-0 rounded object-cover" />}
-                <div className="min-w-0">
-                  <div className="truncate text-[12.5px]">{file.name}</div>
-                  <div className="font-mono text-[10.5px] text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</div>
-                </div>
-              </div>
+              <figure className="mb-6">
+                {preview && (
+                  <a href={preview} target="_blank" rel="noreferrer" title="Open the full photo">
+                    <img src={preview} alt={`Photo of ${file.name}`} className="h-40 w-full rounded-xl border border-line bg-panel object-cover object-top" />
+                  </a>
+                )}
+                <figcaption className="mt-2 flex items-baseline justify-between gap-3 text-[12px]">
+                  <span className="truncate">{file.name}</span>
+                  <span className="shrink-0 font-mono text-[10.5px] text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                </figcaption>
+              </figure>
             )}
-            <div className="mt-3 flex justify-between font-mono text-[11px] text-muted">
+            <div className="flex justify-between font-mono text-[11px] text-muted">
               <span>
                 <b className="font-medium text-lime">Gemini</b> {extracting ? `reading line ${lines.length + 1}` : `read ${lines.length} lines`}
               </span>
@@ -188,6 +187,9 @@ export function Scan() {
             </div>
             <div className="mt-2 h-[2px] rounded-full bg-line">
               <div className="h-full rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)] transition-[width] duration-300" style={{ width: `${progress * 100}%` }} />
+            </div>
+            <div className="mt-4">
+              <Receipt lines={lines} printing={extracting} />
             </div>
           </div>
 

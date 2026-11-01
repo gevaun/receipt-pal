@@ -76,14 +76,19 @@ export function buildLookups(transactions: Transaction[]): Lookups {
   };
 }
 
+// Ignores spacing too, so "SuperValu" and "Super Valu" count as the same merchant.
+function squash(text: string): string {
+  return normalize(text).replace(/ /g, "");
+}
+
 export function matchMerchant(merchants: Merchant[], name: string): Merchant | null {
-  const target = normalize(name);
-  if (!target) return null;
+  const target = squash(name);
+  if (target.length < 4) return null;
   return (
-    merchants.find((m) => normalize(m.name) === target) ??
+    merchants.find((m) => squash(m.name) === target) ??
     merchants.find((m) => {
-      const known = normalize(m.name);
-      return known.length >= 4 && (target.includes(known) || known.includes(target));
+      const known = squash(m.name);
+      return Math.min(known.length, target.length) >= 4 && (target.includes(known) || known.includes(target));
     }) ??
     null
   );

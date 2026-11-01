@@ -1,3 +1,5 @@
+import { scanReceipt, type ScanLine } from "./api";
+
 export type ReceiptLine =
   | { kind: "title"; text: string }
   | { kind: "small"; text: string }
@@ -10,59 +12,55 @@ export type ExtractEvent =
   | { type: "line"; line: ReceiptLine; progress?: number }
   | { type: "field"; field: ExtractField; value: string };
 
-export type Extractor = (file: File, onEvent: (event: ExtractEvent) => void, signal: AbortSignal) => Promise<void>;
+export type Extractor = (
+  file: File,
+  merchants: string[],
+  onEvent: (event: ExtractEvent) => void,
+  signal: AbortSignal,
+) => Promise<void>;
 
-export const EXTRACTION_IS_MOCK = true;
-
-const sample: (ReceiptLine | { field: ExtractField; value: string })[] = [
-  { kind: "title", text: "SUPER VALU" },
-  { kind: "title", text: "FRESH FOODS" },
-  { kind: "small", text: "Manor Park Plaza · Kingston" },
-  { field: "merchant", value: "Super Valu Fresh Foods" },
-  { kind: "rule" },
-  { kind: "row", left: "25/10/2026 14:32", right: "REG 03" },
-  { field: "date", value: "2026-10-25" },
-  { kind: "rule" },
-  { kind: "row", left: "JASMINE RICE 2KG", right: "1,250.00" },
-  { kind: "row", left: "WHOLE CHICKEN 1.8KG", right: "2,184.60" },
-  { kind: "row", left: "CALLALOO BUNCH", right: "350.00" },
-  { kind: "row", left: "ACKEE 540G", right: "1,395.00" },
-  { kind: "row", left: "CHEDDAR CHEESE 1KG", right: "2,890.00" },
-  { kind: "row", left: "LAUNDRY DETERGENT", right: "3,415.40" },
-  { kind: "row", left: "COOKING OIL 3L", right: "2,271.16" },
-  { kind: "rule" },
-  { kind: "row", left: "SUBTOTAL", right: "13,756.16" },
-  { kind: "row", left: "GCT 15%", right: "2,063.42" },
-  { kind: "row", left: "TOTAL", right: "15,819.58", strong: true },
-  { field: "amount", value: "15819.58" },
-  { kind: "rule" },
-  { kind: "row", left: "MASTERCARD ****4417", right: "15,819.58" },
-  { kind: "small", text: "THANK YOU · COME AGAIN" },
-  { field: "note", value: "7 items, incl. GCT 2,063.42" },
-];
+// The whole replay takes about this long, however many lines the receipt has.
+const REPLAY_MS = 3000;
 
 const wait = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(resolve, ms);
-    signal.addEventListener("abort", () => {
+    const onAbort = () => {
       clearTimeout(timer);
       reject(new DOMException("Aborted", "AbortError"));
-    });
+    };
+    const timer = setTimeout(() => {
+      signal.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener("abort", onAbort, { once: true });
   });
 
-const mockExtract: Extractor = async (_file, onEvent, signal) => {
-  await wait(700, signal);
-  const total = sample.filter((step) => !("field" in step)).length;
-  let printed = 0;
-  for (const step of sample) {
-    if ("field" in step) {
-      onEvent({ type: "field", field: step.field, value: step.value });
-      continue;
-    }
-    await wait(step.kind === "rule" ? 140 : 320, signal);
-    printed += 1;
-    onEvent({ type: "line", line: step, progress: printed / total });
+function toReceiptLine(line: ScanLine): ReceiptLine {
+  switch (line.kind) {
+    case "title":
+      return { kind: "title", text: line.text };
+    case "small":
+      return { kind: "small", text: line.text };
+    case "rule":
+      return { kind: "rule" };
+    case "row":
+      return { kind: "row", left: line.left, right: line.right, strong: line.strong };
   }
-};
+}
 
-export const extractReceipt: Extractor = mockExtract;
+export const extractReceipt: Extractor = async (file, merchants, onEvent, signal) => {
+  const scan = await scanReceipt(file, merchants, signal);
+  onEvent({ type: "field", field: "merchant", value: scan.merchant });
+  onEvent({ type: "field", field: "date", value: scan.date });
+
+  // The receipt prints line by line, so replay the lines the model read in order.
+  const total = Math.max(scan.lines.length, 1);
+  const step = Math.min(320, REPLAY_MS / total);
+  for (const [index, scanned] of scan.lines.entries()) {
+    await wait(scanned.kind === "rule" ? step / 2 : step, signal);
+    onEvent({ type: "line", line: toReceiptLine(scanned), progress: (index + 1) / total });
+  }
+
+  onEvent({ type: "field", field: "amount", value: scan.amount.toFixed(2) });
+  onEvent({ type: "field", field: "note", value: scan.description });
+};
