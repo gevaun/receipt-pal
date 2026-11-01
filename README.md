@@ -2,6 +2,12 @@
 
 A companion to Money Manager that aims to make tracking expenses as simple as photographing a receipt.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/screenshots/dashboard-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/screenshots/dashboard-light.png">
+  <img alt="Receipt Pal dashboard showing the month's total spend, a daily spend chart, categories and recent expenses" src="assets/screenshots/dashboard-dark.png">
+</picture>
+
 ## Why Receipt Pal?
 
 Budgeting apps like Monarch Money and Copilot Money can connect to many US bank accounts and automatically import transactions. That convenience is less accessible in Jamaica, where local bank integrations with these apps are limited. Some subscription-based budgeting tools also offer receipt scanning, but a subscription of around JMD $2,000 a month can be a steep price to pay for managing a budget.
@@ -22,6 +28,34 @@ Currently, Receipt Pal can:
 - Preview the planned receipt-to-expense workflow using sample data.
 
 The intended workflow is to photograph or upload a receipt, use AI to extract its details, review and correct the result, and then save it to Money Manager. The extraction service has not been implemented yet.
+
+## Screenshots
+
+The screenshots use sample data. The app has light and dark themes and follows your system setting by default.
+
+### Scanning a receipt (demo)
+
+While the receipt is read, it prints line by line and the review form fills in as each field is found. Fields are marked as extracted from the receipt or suggested from your history with that merchant.
+
+| Extracting | Ready to review |
+| --- | --- |
+| ![Scan screen mid-extraction: a receipt printing line by line next to a partly filled review form](assets/screenshots/scan-printing-dark.png) | ![Scan screen after extraction: the full receipt beside a completed review form ready to save](assets/screenshots/scan-review-dark.png) |
+
+### Transactions
+
+Filter by date range, account or text, select several expenses to delete, or add and edit an expense in the side panel. The merchant field suggests previous merchants, and category and sub-category are searchable.
+
+![Transactions table with the Add expense panel open](assets/screenshots/transactions-dark.png)
+
+### Categories
+
+![Spending by category and sub-category for the month](assets/screenshots/categories-dark.png)
+
+### Design concept
+
+The board the interface was built from: the dashboard, the scan screen and the type and colour system.
+
+![Design board with the dashboard, the scan screen and the design system](assets/design/design-board.png)
 
 ## How it works
 
