@@ -1,0 +1,6 @@
+.env
+.DS_Store
+
+# Personal planning notes
+TODO.md
+local/

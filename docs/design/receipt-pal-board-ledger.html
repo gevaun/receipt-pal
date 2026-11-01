@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Receipt Pal Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F3EFE6; --ink: #1D1C19; --sheet: #FBF9F4; --green: #1F5C46;
+    --rule: #D8D1C2; --graphite: #6B665C; --vermilion: #C8462A; --saffron: #E3A92F;
+    --board: #E6E1D6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
+  body {
+    background: var(--board); color: var(--ink);
+    font: 400 12px/1.45 "IBM Plex Sans", sans-serif;
+    display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 28px; padding: 36px;
+  }
+  .serif { font-family: "Newsreader", serif; }
+  .mono { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; }
+
+  /* Browser frame */
+  .frame { background: var(--paper); border: 1px solid #CFC8B8; border-radius: 10px; overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 18px 40px -24px rgba(40,30,10,.25); }
+  .chrome { height: 34px; display: flex; align-items: center; gap: 14px; padding: 0 14px;
+    background: #ECE7DC; border-bottom: 1px solid var(--rule); }
+  .dots { display: flex; gap: 6px; } .dots i { width: 9px; height: 9px; border-radius: 50%; background: #CEC6B5; display: block; }
+  .url { flex: 1; max-width: 300px; height: 20px; border-radius: 5px; background: var(--sheet); border: 1px solid var(--rule);
+    font: 400 10.5px "IBM Plex Mono", monospace; color: var(--graphite); display: flex; align-items: center; padding: 0 10px; }
+  .app { flex: 1; display: grid; grid-template-columns: 148px 1fr; min-height: 0; }
+
+  /* Nav */
+  nav { border-right: 1px solid var(--rule); padding: 26px 18px; display: flex; flex-direction: column; gap: 30px; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .mark { width: 18px; height: 22px; background: var(--ink); position: relative;
+    -webkit-mask: radial-gradient(circle 2.2px at 3px 100%, transparent 98%, #000) 0 0 / 6px 100% repeat-x;
+            mask: radial-gradient(circle 2.2px at 3px 100%, transparent 98%, #000) 0 0 / 6px 100% repeat-x; }
+  .mark::after { content: ""; position: absolute; left: 4px; right: 4px; top: 6px; height: 1.5px; background: var(--paper);
+    box-shadow: 0 4px 0 var(--paper), 0 8px 0 var(--paper); }
+  .wordmark { font: 500 17px/1 "Newsreader", serif; letter-spacing: -.01em; }
+  .links { display: flex; flex-direction: column; gap: 2px; }
+  .links a { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border: 1px solid transparent; border-radius: 6px;
+    color: var(--graphite); font-weight: 500; text-decoration: none; }
+  .links a svg { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .links a.on { background: var(--sheet); border-color: var(--rule); color: var(--ink); }
+  .links a.on svg { stroke: var(--green); }
+  .navfoot { margin-top: auto; font-size: 10.5px; color: var(--graphite); }
+  .navfoot b { display: block; color: var(--ink); font-weight: 500; }
+
+  main { padding: 26px 30px 24px; display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .head { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+  .eyebrow { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--graphite); font-weight: 500; }
+  h1 { font: 500 26px/1.05 "Newsreader", serif; letter-spacing: -.015em; }
+  .step { display: flex; gap: 4px; margin-left: 4px; }
+  .step span { width: 22px; height: 22px; border: 1px solid var(--rule); border-radius: 5px; display: grid; place-items: center; color: var(--graphite); font-size: 11px; }
+  .btn { margin-left: auto; background: var(--green); color: #F6F3EC; font-weight: 500; font-size: 11.5px;
+    padding: 7px 13px; border-radius: 6px; display: inline-flex; gap: 6px; align-items: center; }
+  .btn.ghost { margin-left: 0; background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+
+  /* Dashboard */
+  .dash { flex: 1; display: grid; grid-template-columns: 1fr 226px; gap: 30px; min-height: 0; }
+  .hero .num { font: 400 58px/1 "Newsreader", serif; letter-spacing: -.03em; margin: 8px 0 8px; }
+  .hero .num small { font-size: 30px; color: var(--graphite); }
+  .delta { font-size: 11px; color: var(--graphite); }
+  .delta b { color: var(--vermilion); font-weight: 500; }
+  .sec { margin-top: 34px; }
+  .sec h2 { font: 500 13px "IBM Plex Sans"; margin-bottom: 12px; display: flex; justify-content: space-between; }
+  .sec h2 span { color: var(--graphite); font-weight: 400; font-size: 11px; }
+  .cat { margin-bottom: 13px; }
+  .cat .row { display: flex; align-items: baseline; gap: 6px; font-size: 12px; }
+  .cat .lead { flex: 1; border-bottom: 1px dotted #B9B1A0; transform: translateY(-3px); }
+  .cat .bar { height: 6px; background: #E5DFD2; border-radius: 1px; margin-top: 6px; }
+  .cat .bar i { display: block; height: 100%; background: var(--ink); border-radius: 1px; }
+  .daily { display: flex; align-items: flex-end; gap: 3px; height: 150px; border-bottom: 1px solid var(--rule); }
+  .daily i { flex: 1; background: #D9D2C3; border-radius: 1px 1px 0 0; min-height: 3px; }
+  .daily i.hit { background: var(--green); }
+  .daily i.today { background: var(--saffron); }
+  .axis { display: flex; justify-content: space-between; font: 400 9.5px "IBM Plex Mono"; color: var(--graphite); margin-top: 5px; }
+
+  .tape { align-self: start; background: var(--sheet); padding: 22px 16px 24px; position: relative;
+    filter: drop-shadow(0 6px 10px rgba(60,45,20,.10));
+    -webkit-mask: radial-gradient(circle 4px at 5px 0, transparent 97%, #000) 0 0 / 10px 51% repeat-x,
+                  radial-gradient(circle 4px at 5px 100%, transparent 97%, #000) 0 100% / 10px 51% repeat-x;
+            mask: radial-gradient(circle 4px at 5px 0, transparent 97%, #000) 0 0 / 10px 51% repeat-x,
+                  radial-gradient(circle 4px at 5px 100%, transparent 97%, #000) 0 100% / 10px 51% repeat-x; }
+  .tape .t { text-align: center; font: 500 10px "IBM Plex Mono"; letter-spacing: .14em; color: var(--graphite); }
+  .tape hr { border: 0; border-top: 1px dashed #BDB5A4; margin: 12px 0; }
+  .item { font: 400 10.5px/1.35 "IBM Plex Mono"; margin-bottom: 11px; }
+  .item .l { display: flex; gap: 4px; align-items: baseline; }
+  .item .l .lead { flex: 1; border-bottom: 1px dotted #B9B1A0; transform: translateY(-3px); }
+  .item .s { color: var(--graphite); font-size: 9.5px; }
+  .tot { display: flex; justify-content: space-between; font: 500 11.5px "IBM Plex Mono"; }
+
+  /* Ledger */
+  .tools { display: flex; gap: 8px; margin-bottom: 18px; align-items: center; }
+  .chip { border: 1px solid var(--rule); background: var(--sheet); border-radius: 6px; padding: 6px 10px; font-size: 11px;
+    display: inline-flex; gap: 7px; align-items: center; }
+  .chip .k { color: var(--graphite); }
+  .search { flex: 1; color: var(--graphite); }
+  .ledger-wrap { flex: 1; display: grid; grid-template-columns: 1fr 226px; gap: 0; min-height: 0;
+    border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th { text-align: left; font: 500 9.5px "IBM Plex Sans"; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite);
+    padding: 11px 8px; border-bottom: 1px solid var(--rule); background: #F7F4EC; }
+  td { padding: 13px 8px; border-bottom: 1px solid #E8E2D6; font-size: 11.5px; vertical-align: top; }
+  td.amt, th.amt { text-align: right; }
+  td.amt { font: 500 11.5px "IBM Plex Mono"; }
+  td .sub { color: var(--graphite); font-size: 10.5px; }
+  td.d { font: 400 10.5px "IBM Plex Mono"; color: var(--graphite); white-space: nowrap; }
+  .cb { width: 13px; height: 13px; border: 1px solid #B9B1A0; border-radius: 3px; display: inline-block; background: #fff; }
+  .cb.on { background: var(--ink); border-color: var(--ink); position: relative; }
+  .cb.on::after { content: ""; position: absolute; left: 3.5px; top: 1px; width: 3.5px; height: 7px; border: solid #fff; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); }
+  tr.sel td { background: #EFEBE1; }
+  tr.open td { background: #E7EFEA; }
+  tr.open td:first-child { box-shadow: inset 2px 0 0 var(--green); }
+  .tablecol { display: flex; flex-direction: column; min-width: 0; }
+  .selbar { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-top: 1px solid var(--rule);
+    background: var(--ink); color: #EFEBE1; font-size: 11px; }
+  .selbar .del { margin-left: auto; color: #F2A592; font-weight: 500; }
+  .selbar .sum { font-family: "IBM Plex Mono"; color: #BEB7A8; }
+  .drawer { border-left: 1px solid var(--rule); padding: 18px 16px; display: flex; flex-direction: column; gap: 11px; background: var(--paper); }
+  .drawer h3 { font: 500 18px/1.1 "Newsreader", serif; }
+  .drawer .meta { font: 400 9.5px "IBM Plex Mono"; color: var(--graphite); margin-top: -6px; }
+  .f label { display: block; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); font-weight: 500; margin-bottom: 4px; }
+  .f .in { border: 1px solid var(--rule); background: var(--sheet); border-radius: 5px; padding: 6px 8px; font-size: 11.5px; }
+  .f .in.mono { font-size: 10.5px; }
+  .f .in.big { font: 500 17px "IBM Plex Mono"; }
+  .f .in.area { min-height: 46px; font-size: 11px; line-height: 1.4; }
+  .f { position: relative; }
+  .in.sel, .in.combo, .in.focus { display: flex; align-items: center; gap: 6px; }
+  .in .v { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .in .ic { width: 11px; height: 11px; flex: none; fill: none; stroke: var(--graphite); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+  .in.sel { background: #F7F4EC; }
+  .in.focus { background: #fff; border-color: var(--green); box-shadow: 0 0 0 3px rgba(31,92,70,.14); }
+  .caret { display: inline-block; width: 1px; height: 13px; background: var(--ink); vertical-align: -2px; margin-left: 1px; }
+  .pop { position: absolute; left: 0; right: 0; top: calc(100% + 5px); z-index: 2; background: #fff; border: 1px solid var(--rule);
+    border-radius: 6px; padding: 4px; box-shadow: 0 14px 28px -14px rgba(40,30,10,.35); }
+  .pop .gh { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--graphite); font-weight: 500; padding: 6px 8px 4px; }
+  .pop .opt { display: flex; justify-content: space-between; gap: 6px; padding: 6px 8px; border-radius: 4px; font-size: 11px; color: var(--graphite); }
+  .pop .opt span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pop .opt b { color: var(--ink); font-weight: 600; }
+  .pop .opt.act { background: #E7EFEA; color: var(--ink); }
+  .pop .opt small { font: 400 10px "IBM Plex Mono"; color: var(--graphite); }
+  .pop .new { border-top: 1px solid #EEE8DC; margin-top: 4px; padding: 7px 8px 4px; color: var(--green); font-size: 10.5px; font-weight: 500; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .acts { margin-top: auto; display: flex; align-items: center; gap: 8px; }
+  .acts .btn { margin-left: 0; }
+  .acts .rm { margin-left: auto; color: var(--vermilion); font-weight: 500; font-size: 11.5px; }
+
+  /* Rail */
+  .rail { background: var(--sheet); border: 1px solid #CFC8B8; border-radius: 10px; padding: 30px 26px; display: flex; flex-direction: column; gap: 30px; }
+  .rail .lbl { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--graphite); font-weight: 600; margin-bottom: 14px; }
+  .type { display: flex; flex-direction: column; gap: 16px; }
+  .type .sample { line-height: 1; margin-bottom: 4px; }
+  .type .nm { font-size: 12.5px; font-weight: 500; }
+  .type .role { font-size: 11px; color: var(--graphite); }
+  .dom { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sw { border-radius: 6px; height: 92px; padding: 10px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid rgba(0,0,0,.08); }
+  .sw b { font-size: 12px; font-weight: 600; } .sw span { font: 400 11px "IBM Plex Mono"; opacity: .8; }
+  .sup { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 10px; }
+  .ch { display: flex; gap: 9px; align-items: center; }
+  .ch i { width: 26px; height: 26px; border-radius: 5px; display: block; border: 1px solid rgba(0,0,0,.08); flex: none; }
+  .ch b { display: block; font-size: 11.5px; font-weight: 500; line-height: 1.2; }
+  .ch span { font: 400 10.5px "IBM Plex Mono"; color: var(--graphite); }
+</style>
+</head>
+<body>
+
+<!-- Screen 1: Dashboard -->
+<section class="frame">
+  <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">localhost:5173/</div></div>
+  <div class="app">
+    <nav>
+      <div class="brand"><div class="mark"></div><div class="wordmark">Receipt Pal</div></div>
+      <div class="links"><a class="on"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Dashboard</a><a><svg viewBox="0 0 16 16"><path d="M3 2.5h10v11.5l-1.7-1.2-1.6 1.2-1.7-1.2-1.6 1.2-1.7-1.2L3 14z"/><path d="M5.5 6h5M5.5 9h3"/></svg>Transactions</a><a><svg viewBox="0 0 16 16"><path d="M2.5 8.6V3a.5.5 0 0 1 .5-.5h5.6L14 7.9l-6.1 6.1z"/><circle cx="5.6" cy="5.6" r="1"/></svg>Categories</a></div>
+      <div class="navfoot"><b>Money Manager</b>Synced 2 min ago</div>
+    </nav>
+    <main>
+      <div class="head">
+        <div><div class="eyebrow">Overview</div><h1>October 2026</h1></div>
+        <div class="step"><span>‹</span><span>›</span></div>
+        <div class="btn">+ Add expense</div>
+      </div>
+      <div class="dash">
+        <div>
+          <div class="hero">
+            <div class="eyebrow">Spent this month</div>
+            <div class="num">$15,855<small>.36</small></div>
+            <div class="delta"><b>▲ 12.4%</b> vs September · 5 expenses · Scotia Mastercard</div>
+          </div>
+          <div class="sec">
+            <h2>By category <span>October</span></h2>
+            <div class="cat"><div class="row"><span>Household</span><span class="lead"></span><span class="mono">15,819.58</span></div><div class="bar"><i style="width:99.8%"></i></div></div>
+            <div class="cat"><div class="row"><span>Food</span><span class="lead"></span><span class="mono">30.78</span></div><div class="bar"><i style="width:4%"></i></div></div>
+            <div class="cat"><div class="row"><span>Utilities</span><span class="lead"></span><span class="mono">5.00</span></div><div class="bar"><i style="width:1.5%"></i></div></div>
+          </div>
+          <div class="sec">
+            <h2>Daily spend <span>Oct 1 – 31</span></h2>
+            <div class="daily">
+              <i></i><i></i><i class="hit" style="height:22%"></i><i class="hit" style="height:14%"></i><i></i><i></i><i></i><i class="hit" style="height:20%"></i><i></i><i class="hit" style="height:19%"></i>
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              <i></i><i></i><i></i><i></i><i class="hit" style="height:100%"></i><i></i><i></i><i></i><i class="today" style="height:5%"></i><i></i><i></i>
+            </div>
+            <div class="axis"><span>01</span><span>08</span><span>15</span><span>22</span><span>29</span></div>
+          </div>
+        </div>
+        <div class="tape">
+          <div class="t">RECENT · OCT 2026</div>
+          <hr>
+          <div class="item"><div class="l"><span>Super Valu</span><span class="lead"></span><span>15,819.58</span></div><div class="s">25 OCT · Groceries</div></div>
+          <div class="item"><div class="l"><span>Juici Patties</span><span class="lead"></span><span>9.20</span></div><div class="s">10 OCT · Lunch</div></div>
+          <div class="item"><div class="l"><span>City Flames</span><span class="lead"></span><span>9.59</span></div><div class="s">08 OCT · Breakfast</div></div>
+          <div class="item"><div class="l"><span>Railway Corp</span><span class="lead"></span><span>5.00</span></div><div class="s">04 OCT · Digital</div></div>
+          <div class="item"><div class="l"><span>PeppaThyme</span><span class="lead"></span><span>11.99</span></div><div class="s">03 OCT · Lunch</div></div>
+          <hr>
+          <div class="tot"><span>TOTAL</span><span>15,855.36</span></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- Screen 2: Transactions ledger -->
+<section class="frame">
+  <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url">localhost:5173/transactions</div></div>
+  <div class="app">
+    <nav>
+      <div class="brand"><div class="mark"></div><div class="wordmark">Receipt Pal</div></div>
+      <div class="links"><a><svg viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>Dashboard</a><a class="on"><svg viewBox="0 0 16 16"><path d="M3 2.5h10v11.5l-1.7-1.2-1.6 1.2-1.7-1.2-1.6 1.2-1.7-1.2L3 14z"/><path d="M5.5 6h5M5.5 9h3"/></svg>Transactions</a><a><svg viewBox="0 0 16 16"><path d="M2.5 8.6V3a.5.5 0 0 1 .5-.5h5.6L14 7.9l-6.1 6.1z"/><circle cx="5.6" cy="5.6" r="1"/></svg>Categories</a></div>
+      <div class="navfoot"><b>Money Manager</b>Synced 2 min ago</div>
+    </nav>
+    <main>
+      <div class="head">
+        <div><div class="eyebrow">Ledger</div><h1>Transactions</h1></div>
+        <div class="btn">+ Add expense</div>
+      </div>
+      <div class="tools">
+        <div class="chip"><span class="k">Range</span><span class="mono">Oct 01 – Oct 31</span></div>
+        <div class="chip"><span class="k">Account</span>Scotia Mastercard</div>
+        <div class="chip search">Search merchant or note</div>
+      </div>
+      <div class="ledger-wrap">
+        <div class="tablecol">
+          <table>
+            <thead><tr><th style="width:28px"></th><th style="width:52px">Date</th><th>Merchant</th><th class="amt" style="width:78px">Amount</th></tr></thead>
+            <tbody>
+              <tr class="sel"><td><span class="cb on"></span></td><td class="d">25 Oct</td><td>Super Valu Fresh Foods<div class="sub">Household · Groceries</div></td><td class="amt">15,819.58</td></tr>
+              <tr class="open"><td><span class="cb"></span></td><td class="d">10 Oct</td><td>Juici Patties<div class="sub">Food · Lunch</div></td><td class="amt">9.20</td></tr>
+              <tr><td><span class="cb"></span></td><td class="d">08 Oct</td><td>City Flames Buffet &amp; Grill<div class="sub">Food · Breakfast</div></td><td class="amt">9.59</td></tr>
+              <tr class="sel"><td><span class="cb on"></span></td><td class="d">04 Oct</td><td>Railway Corporation<div class="sub">Utilities · Digital</div></td><td class="amt">5.00</td></tr>
+              <tr><td><span class="cb"></span></td><td class="d">03 Oct</td><td>PeppaThyme<div class="sub">Food · Lunch</div></td><td class="amt">11.99</td></tr>
+            </tbody>
+          </table>
+          <div class="selbar"><span>2 selected</span><span class="sum">15,824.58</span><span class="del">Delete</span></div>
+        </div>
+        <aside class="drawer">
+          <div><h3>Edit expense</h3></div>
+          <div class="meta">ID E4140E03…F0680</div>
+          <div class="f"><label>Amount</label><div class="in big">9.20</div></div>
+          <div class="f"><label>Date</label><div class="in mono">2026-10-10</div></div>
+          <div class="f"><label>Account</label><div class="in sel"><span class="v">Scotia Mastercard</span><svg class="ic" viewBox="0 0 12 12"><path d="M3.5 4.5 6 2 8.5 4.5M3.5 7.5 6 10 8.5 7.5"/></svg></div></div>
+          <div class="two">
+            <div class="f"><label>Category</label><div class="in combo"><span class="v">Food</span><svg class="ic" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div></div>
+            <div class="f"><label>Sub</label><div class="in combo"><span class="v">Lunch</span><svg class="ic" viewBox="0 0 12 12"><path d="M3 4.5 6 7.5 9 4.5"/></svg></div></div>
+          </div>
+          <div class="f"><label>Merchant</label><div class="in focus"><span class="v">Juici Pa<i class="caret"></i></span></div>
+            <div class="pop">
+              <div class="gh">Matches</div>
+              <div class="opt act"><span><b>Juici Pa</b>tties</span><small>3×</small></div>
+              <div class="gh">Recent</div>
+              <div class="opt"><span>City Flames Buffet &amp; Grill</span><small>2×</small></div>
+              <div class="opt"><span>PeppaThyme</span><small>4×</small></div>
+              <div class="new">+ Use “Juici Pa” as new merchant</div>
+            </div>
+          </div>
+          <div class="f"><label>Note</label><div class="in area">Purchased large fried chicken and a beef patty</div></div>
+          <div class="acts"><div class="btn">Save changes</div><span class="rm">Delete</span></div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- Design-system rail -->
+<aside class="rail">
+  <div>
+    <div class="lbl">Typography</div>
+    <div class="type">
+      <div><div class="sample serif" style="font-size:40px;letter-spacing:-.02em">Aa 15,855</div><div class="nm">Newsreader</div><div class="role">Display · headings, hero figures</div></div>
+      <div><div class="sample" style="font-size:26px;font-weight:500">Aa Expense</div><div class="nm">IBM Plex Sans</div><div class="role">UI · labels, body, nav</div></div>
+      <div><div class="sample mono" style="font-size:24px">0123.45</div><div class="nm">IBM Plex Mono</div><div class="role">Figures · amounts, dates</div></div>
+    </div>
+  </div>
+  <div>
+    <div class="lbl">Core colors</div>
+    <div class="dom">
+      <div class="sw" style="background:#F3EFE6"><b>Paper</b><span>#F3EFE6</span></div>
+      <div class="sw" style="background:#1D1C19;color:#F3EFE6"><b>Ink</b><span>#1D1C19</span></div>
+      <div class="sw" style="background:#FBF9F4"><b>Sheet</b><span>#FBF9F4</span></div>
+      <div class="sw" style="background:#1F5C46;color:#F3EFE6"><b>Ledger Green</b><span>#1F5C46</span></div>
+    </div>
+  </div>
+  <div>
+    <div class="lbl">Supporting</div>
+    <div class="sup">
+      <div class="ch"><i style="background:#D8D1C2"></i><div><b>Rule</b><span>#D8D1C2</span></div></div>
+      <div class="ch"><i style="background:#6B665C"></i><div><b>Graphite</b><span>#6B665C</span></div></div>
+      <div class="ch"><i style="background:#C8462A"></i><div><b>Vermilion</b><span>#C8462A</span></div></div>
+      <div class="ch"><i style="background:#E3A92F"></i><div><b>Saffron</b><span>#E3A92F</span></div></div>
+    </div>
+  </div>
+</aside>
+
+</body>
+</html>
