@@ -41,7 +41,7 @@ export function Categories() {
 
   return (
     <div className="mx-auto max-w-[1080px] px-6 py-7 md:px-10">
-      <PageHeader eyebrow="Spending by category" title={monthLabel(month)}>
+      <PageHeader eyebrow="Spending by category" title={monthLabel(month)} titleClass="min-w-[13rem]">
         <MonthStepper month={month} onChange={setMonth} />
         <span className="tabular mb-1 ml-auto font-mono text-[13px]">{formatMoney(total)}</span>
       </PageHeader>

@@ -44,7 +44,7 @@ export function Dashboard() {
 
   return (
     <div className="mx-auto max-w-[1080px] px-6 py-7 md:px-10">
-      <PageHeader eyebrow="Overview" title={monthLabel(month)}>
+      <PageHeader eyebrow="Overview" title={monthLabel(month)} titleClass="min-w-[13rem]">
         <MonthStepper month={month} onChange={setMonth} />
         <div className="ml-auto flex gap-2">
           <Button variant="ghost" onClick={() => navigate("/transactions?new=1")}>

@@ -90,17 +90,28 @@ export function Layout() {
         </div>
         <ConnectionLink />
       </nav>
-      <main className="dot-grid min-w-0 overflow-y-auto">
+      {/* Reserve the scrollbar's space on every page so content doesn't shift between short and long pages. */}
+      <main className="dot-grid min-w-0 overflow-y-auto [scrollbar-gutter:stable]">
         <Outlet />
       </main>
     </div>
   );
 }
 
-export function PageHeader({ eyebrow, title, children }: { eyebrow: string; title: string; children?: ReactNode }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  titleClass,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  titleClass?: string;
+  children?: ReactNode;
+}) {
   return (
     <header className="mb-8 flex flex-wrap items-end gap-3">
-      <div>
+      <div className={titleClass}>
         <div className="font-mono text-[10px] tracking-[0.14em] text-muted uppercase">{eyebrow}</div>
         <h1 className="mt-1 text-[24px] leading-tight font-medium tracking-[-0.03em]">{title}</h1>
       </div>
