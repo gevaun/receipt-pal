@@ -1,20 +1,39 @@
 import { useEffect, useRef, useState, type DragEvent } from "react";
 import { Link } from "react-router";
-import { emptyDraft, ExpenseForm, merchantDefaults, parseAmount, validateDraft, type Draft, type DraftField } from "../components/ExpenseForm";
+import {
+  emptyDraft,
+  ExpenseForm,
+  merchantDefaults,
+  parseAmount,
+  validateDraft,
+  type Draft,
+  type DraftField,
+} from "../components/ExpenseForm";
 import { CheckIcon, UploadIcon } from "../components/icons";
 import { PageHeader } from "../components/Layout";
 import { Receipt } from "../components/Receipt";
 import { Banner, Button, cx, type FieldTone } from "../components/ui";
 import { createExpense } from "../lib/api";
 import { useInvalidate, useLookups } from "../lib/data";
-import { extractReceipt, type ExtractEvent, type ReceiptLine } from "../lib/extract";
+import {
+  extractReceipt,
+  type ExtractEvent,
+  type ReceiptLine,
+} from "../lib/extract";
 import { today } from "../lib/format";
 import { matchMerchant } from "../lib/lookups";
 
 type Phase = "idle" | "extracting" | "review" | "saving" | "saved";
 type Tones = Partial<Record<DraftField, FieldTone>>;
 
-const PENDING: Tones = { merchant: "pending", date: "pending", amount: "pending", category: "pending", subCategory: "pending", note: "pending" };
+const PENDING: Tones = {
+  merchant: "pending",
+  date: "pending",
+  amount: "pending",
+  category: "pending",
+  subCategory: "pending",
+  note: "pending",
+};
 
 export function Scan() {
   const lookups = useLookups();
@@ -35,7 +54,10 @@ export function Scan() {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => () => abortRef.current?.abort(), []);
-  useEffect(() => () => void (preview && URL.revokeObjectURL(preview)), [preview]);
+  useEffect(
+    () => () => void (preview && URL.revokeObjectURL(preview)),
+    [preview],
+  );
 
   function handleEvent(event: ExtractEvent) {
     if (event.type === "line") {
@@ -49,10 +71,21 @@ export function Scan() {
       if (match) {
         setDraft((d) => ({ ...d, ...merchantDefaults(match) }));
         setMatchedCount(match.count);
-        setTones((t) => ({ ...t, merchant: "extracted", category: "suggested", subCategory: "suggested", account: "suggested" }));
+        setTones((t) => ({
+          ...t,
+          merchant: "extracted",
+          category: "suggested",
+          subCategory: "suggested",
+          account: "suggested",
+        }));
       } else {
         setDraft((d) => ({ ...d, merchant: value }));
-        setTones((t) => ({ ...t, merchant: "extracted", category: "check", subCategory: "check" }));
+        setTones((t) => ({
+          ...t,
+          merchant: "extracted",
+          category: "check",
+          subCategory: "check",
+        }));
       }
     } else if (field === "amount") {
       setDraft((d) => ({ ...d, amount: parseAmount(value).toFixed(2) }));
@@ -64,7 +97,8 @@ export function Scan() {
   }
 
   async function start(next: File) {
-    if (!next.type.startsWith("image/")) return setError("That file isn't an image. Choose a photo of a receipt.");
+    if (!next.type.startsWith("image/"))
+      return setError("That file isn't an image. Choose a photo of a receipt.");
     abortRef.current?.abort();
     const controller = new AbortController();
     abortRef.current = controller;
@@ -80,7 +114,11 @@ export function Scan() {
     try {
       const merchants = lookupsRef.current.merchants.map((m) => m.name);
       await extractReceipt(next, merchants, handleEvent, controller.signal);
-      setTones((t) => Object.fromEntries(Object.entries(t).map(([k, v]) => [k, v === "pending" ? "check" : v])));
+      setTones((t) =>
+        Object.fromEntries(
+          Object.entries(t).map(([k, v]) => [k, v === "pending" ? "check" : v]),
+        ),
+      );
       setPhase("review");
     } catch (e) {
       if (controller.signal.aborted) return;
@@ -139,15 +177,21 @@ export function Scan() {
           onDrop={onDrop}
           className={cx(
             "mt-2 flex cursor-pointer flex-col items-center justify-center gap-4 rounded-2xl border border-dashed px-6 py-24 text-center transition-colors",
-            dragging ? "border-lime bg-lime/5" : "border-line bg-panel/60 hover:border-muted",
+            dragging
+              ? "border-lime bg-lime/5"
+              : "border-line bg-panel/60 hover:border-muted",
           )}
         >
           <span className="grid size-12 place-items-center rounded-xl border border-line bg-raise text-lime">
             <UploadIcon className="size-5" />
           </span>
           <span>
-            <span className="block text-[15px] font-medium">Drop a receipt photo</span>
-            <span className="mt-1 block text-[12.5px] text-muted">or click to choose one · JPG, PNG or HEIC</span>
+            <span className="block text-[15px] font-medium">
+              Drop a receipt photo
+            </span>
+            <span className="mt-1 block text-[12.5px] text-muted">
+              or click to choose one · JPG, PNG or HEIC
+            </span>
           </span>
           <input
             type="file"
@@ -169,24 +213,41 @@ export function Scan() {
             {file && (
               <figure className="mb-6">
                 {preview && (
-                  <a href={preview} target="_blank" rel="noreferrer" title="Open the full photo">
-                    <img src={preview} alt={`Photo of ${file.name}`} className="h-40 w-full rounded-xl border border-line bg-panel object-cover object-top" />
+                  <a
+                    href={preview}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open the full photo"
+                  >
+                    <img
+                      src={preview}
+                      alt={`Photo of ${file.name}`}
+                      className="h-40 w-full rounded-xl border border-line bg-panel object-cover object-top"
+                    />
                   </a>
                 )}
                 <figcaption className="mt-2 flex items-baseline justify-between gap-3 text-[12px]">
                   <span className="truncate">{file.name}</span>
-                  <span className="shrink-0 font-mono text-[10.5px] text-muted">{(file.size / 1024 / 1024).toFixed(1)} MB</span>
+                  <span className="shrink-0 font-mono text-[10.5px] text-muted">
+                    {(file.size / 1024 / 1024).toFixed(1)} MB
+                  </span>
                 </figcaption>
               </figure>
             )}
             <div className="flex justify-between font-mono text-[11px] text-muted">
               <span>
-                <b className="font-medium text-lime">Gemini</b> {extracting ? `reading line ${lines.length + 1}` : `read ${lines.length} lines`}
+                <b className="font-medium text-lime">Gemini</b>{" "}
+                {extracting
+                  ? `reading line ${lines.length + 1}`
+                  : `read ${lines.length} lines`}
               </span>
               <span>{Math.round(progress * 100)}%</span>
             </div>
             <div className="mt-2 h-[2px] rounded-full bg-line">
-              <div className="h-full rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)] transition-[width] duration-300" style={{ width: `${progress * 100}%` }} />
+              <div
+                className="h-full origin-left rounded-full bg-lime shadow-[0_0_8px_var(--color-lime)] transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                style={{ transform: `scaleX(${progress})` }}
+              />
             </div>
             <div className="mt-4">
               <Receipt lines={lines} printing={extracting} />
@@ -200,14 +261,20 @@ export function Scan() {
                   <CheckIcon className="size-5" />
                 </span>
                 <div>
-                  <h2 className="text-[16px] font-medium">Saved to Money Manager</h2>
+                  <h2 className="text-[16px] font-medium">
+                    Saved to Money Manager
+                  </h2>
                   <p className="mt-1 text-[12.5px] text-muted">
-                    {draft.merchant} · {draft.amount} · {draft.category} / {draft.subCategory}
+                    {draft.merchant} · {draft.amount} · {draft.category} /{" "}
+                    {draft.subCategory}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button onClick={reset}>Scan another</Button>
-                  <Link to="/transactions" className="inline-flex h-8 items-center rounded-lg border border-line px-3.5 text-[12.5px] font-medium hover:bg-raise">
+                  <Link
+                    to="/transactions"
+                    className="inline-flex h-8 items-center rounded-lg border border-line px-3.5 text-[12.5px] font-medium hover:bg-raise"
+                  >
                     View transactions
                   </Link>
                 </div>
@@ -215,10 +282,20 @@ export function Scan() {
             ) : (
               <>
                 <div className="mb-4 flex items-baseline justify-between">
-                  <h2 className="text-[15px] font-medium tracking-[-0.01em]">Review</h2>
-                  <span className="font-mono text-[10.5px] text-muted">{extracting ? "fields fill as they're read" : "check, then save"}</span>
+                  <h2 className="text-[15px] font-medium tracking-[-0.01em]">
+                    Review
+                  </h2>
+                  <span className="font-mono text-[10.5px] text-muted">
+                    {extracting
+                      ? "fields fill as they're read"
+                      : "check, then save"}
+                  </span>
                 </div>
-                {error && <div className="mb-4"><Banner onDismiss={() => setError(null)}>{error}</Banner></div>}
+                {error && (
+                  <div className="mb-4">
+                    <Banner onDismiss={() => setError(null)}>{error}</Banner>
+                  </div>
+                )}
                 <ExpenseForm
                   draft={draft}
                   lookups={lookups}
@@ -230,7 +307,15 @@ export function Scan() {
                     setTones((t) => {
                       const next = { ...t };
                       for (const key of Object.keys(patch)) {
-                        const field = (key === "categoryId" || key === "category" ? "category" : key === "subCategoryId" || key === "subCategory" ? "subCategory" : key === "assetId" ? "account" : key) as DraftField;
+                        const field = (
+                          key === "categoryId" || key === "category"
+                            ? "category"
+                            : key === "subCategoryId" || key === "subCategory"
+                              ? "subCategory"
+                              : key === "assetId"
+                                ? "account"
+                                : key
+                        ) as DraftField;
                         if (next[field] !== "pending") delete next[field];
                       }
                       return next;
@@ -238,7 +323,10 @@ export function Scan() {
                   }}
                 />
                 <div className="mt-6 flex items-center gap-2 border-t border-line pt-4">
-                  <Button onClick={save} disabled={extracting || phase === "saving"}>
+                  <Button
+                    onClick={save}
+                    disabled={extracting || phase === "saving"}
+                  >
                     {phase === "saving" ? "Saving…" : "Save to Money Manager"}
                   </Button>
                   <Button variant="ghost" onClick={reset}>
@@ -257,7 +345,9 @@ export function Scan() {
 const stepNames = ["Upload", "Extract", "Review", "Save"] as const;
 
 function Steps({ phase }: { phase: Phase }) {
-  const current = { idle: 0, extracting: 1, review: 2, saving: 3, saved: 4 }[phase];
+  const current = { idle: 0, extracting: 1, review: 2, saving: 3, saved: 4 }[
+    phase
+  ];
   return (
     <ol className="-mt-3 mb-8 flex flex-wrap items-center gap-2 font-mono text-[10.5px] tracking-[0.06em] text-muted uppercase">
       {stepNames.map((name, i) => {
@@ -270,13 +360,17 @@ function Steps({ phase }: { phase: Phase }) {
               className={cx(
                 "grid size-[18px] place-items-center rounded-full border text-[9px]",
                 done && "border-line bg-raise text-fg",
-                now && "border-lime text-lime shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-lime)_14%,transparent)]",
+                now &&
+                  "border-lime text-lime shadow-[0_0_0_3px_color-mix(in_oklab,var(--color-lime)_14%,transparent)]",
                 !done && !now && "border-line",
               )}
             >
               {done ? <CheckIcon className="size-2.5" /> : i + 1}
             </span>
-            <span className={cx(now && "text-fg")} aria-current={now ? "step" : undefined}>
+            <span
+              className={cx(now && "text-fg")}
+              aria-current={now ? "step" : undefined}
+            >
               {name}
             </span>
           </li>

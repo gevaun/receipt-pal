@@ -87,7 +87,7 @@ export function ExpenseDrawer({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="rounded-md p-1 text-muted hover:bg-raise hover:text-fg"
+          className="relative rounded-md p-1 text-muted before:absolute before:-inset-2.5 hover:bg-raise hover:text-fg"
         >
           <CloseIcon className="size-4" />
         </button>

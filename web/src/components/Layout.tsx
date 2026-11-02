@@ -24,7 +24,7 @@ function ThemeSwitch() {
           title={label}
           onClick={() => setPreference(value)}
           className={cx(
-            "grid h-7 flex-1 place-items-center rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-lime",
+            "grid h-7 flex-1 place-items-center pointer-coarse:h-11 rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-lime",
             preference === value ? "bg-raise text-fg" : "text-muted hover:text-fg",
           )}
         >
